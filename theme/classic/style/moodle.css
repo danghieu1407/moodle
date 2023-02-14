@@ -12270,6 +12270,10 @@ body.dragging .dragging {
   width: 9px;
   border: 0; }
 
+/* Revert the chevrons-up icon in the question bank to original */
+#bulkactionsui-container.dropup .dropdown-toggle::after {
+  font-size: unset; }
+
 .select-menu li:first-child ul[role="group"] {
   padding: 0; }
 
@@ -18347,7 +18351,10 @@ select {
             max-height: 0;
             max-width: 0;
             overflow: hidden;
-            transition: opacity 0s linear, max-height 0s linear, max-width 0s linear, visibility 0s linear; }
+            transition: opacity 0s linear,
+ max-height 0s linear,
+ max-width 0s linear,
+ visibility 0s linear; }
           .path-mod-forum .unified-grader .grader-grading-panel .header-container .user-search-container.collapsed .search-input-container .toggle-search-button .collapsed-icon {
             opacity: 1;
             visibility: visible;

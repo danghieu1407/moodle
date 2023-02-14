@@ -2960,6 +2960,11 @@ body.dragging {
     border: 0;
 }
 
+/* Revert the chevrons-up icon in the question bank to original */
+#bulkactionsui-container.dropup .dropdown-toggle::after {
+    font-size: unset;
+}
+
 .select-menu {
     li:first-child {
         ul[role="group"] {
