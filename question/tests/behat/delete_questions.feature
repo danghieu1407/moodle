@@ -51,6 +51,8 @@ Feature: A teacher can delete questions in the question bank
       | Test used question to be deleted | 1    | 0               |
     When I am on the "Course 1" "core_question > course question bank" page
     And I choose "Delete" action for "Test used question to be deleted" in the question bank
+    And I should see "The following question(s) will be deleted. You can't undo this."
+    And I should see "(* Denotes questions which can't be deleted because they are in use. Instead, they will be hidden in the question bank unless you select 'Show old questions'.)"
     And I press "Delete"
     Then I should not see "Test used question to be deleted"
     And I set the field "Also show old questions" to "1"
@@ -69,3 +71,104 @@ Feature: A teacher can delete questions in the question bank
     And I press "Delete"
     And I set the field "Also show old questions" to "1"
     Then I should not see "Broken question"
+
+  @javascript
+  Scenario: Delete question has multiple versions
+    Given I am on the "Course 1" "core_question > course question bank" page logged in as "teacher1"
+    When I choose "Edit question" action for "Test question to be deleted" in the question bank
+    And I set the field "id_name" to "Renamed question version2"
+    And I set the field "id_questiontext" to "edited question"
+    And I press "id_submitbutton"
+    And I should not see "Test question to be deleted"
+    And I should see "Renamed question version2"
+    And I choose "Delete" action for "Renamed question version2" in the question bank
+    And I should see "The following question(s) will be deleted. You can't undo this."
+    And I should not see "(* Denotes questions which can't be deleted because they are in use. Instead, they will be hidden in the question bank unless you select 'Show old questions'.)"
+    And I press "Delete"
+    Then I should not see "Test question to be deleted"
+    And I should not see "Renamed question version2"
+
+  @javascript
+  Scenario: Delete version of question has more than one version
+    Given I am on the "Course 1" "core_question > course question bank" page logged in as "teacher1"
+    When I choose "Edit question" action for "Test question to be deleted" in the question bank
+    And I set the field "id_name" to "Renamed question version2"
+    And I set the field "id_questiontext" to "edited question"
+    And I press "id_submitbutton"
+    And I should not see "Test question to be deleted"
+    And I should see "Renamed question version2"
+    And I choose "Edit question" action for "Renamed question version2" in the question bank
+    And I set the field "id_name" to "Renamed question version3"
+    And I set the field "id_questiontext" to "edited question"
+    And I press "id_submitbutton"
+    And I should not see "Test question to be deleted"
+    And I should see "Renamed question version3"
+    And I choose "Edit question" action for "Renamed question version3" in the question bank
+    And I set the field "id_name" to "Renamed question version4"
+    And I set the field "id_questiontext" to "edited question"
+    And I press "id_submitbutton"
+    And I should not see "Test question to be deleted"
+    And I should see "Renamed question version4"
+    And I choose "History" action for "Renamed question version4" in the question bank
+    And I should see "Test question to be deleted"
+    And I should see "Renamed question version2"
+    And I should see "Renamed question version3"
+    And I should see "Renamed question version4"
+    And I choose "Delete" action for "Renamed question version3" in the question bank
+    And I should see "The following question(s) will be deleted. You can't undo this."
+    And I should not see "(* Denotes questions which can't be deleted because they are in use. Instead, they will be hidden in the question bank unless you select 'Show old questions'.)"
+    And I press "Delete"
+    Then I should not see "Renamed question version3"
+    And I should see "Test question to be deleted"
+    And I should see "Renamed question version2"
+    And I should see "Renamed question version4"
+
+  @javascript
+  Scenario: Delete multiple question include question has multiple version
+    Given the following "questions" exist:
+      | questioncategory | qtype     | name       | questiontext   |
+      | Test questions   | truefalse | Question A | First question |
+    When I am on the "Course 1" "core_question > course question bank" page logged in as "teacher1"
+    And I choose "Edit question" action for "Test question to be deleted" in the question bank
+    And I set the field "id_name" to "Renamed question version2"
+    And I set the field "id_questiontext" to "edited question"
+    And I press "id_submitbutton"
+    And I should not see "Test question to be deleted"
+    And I should see "Renamed question version2"
+    And I click on "Select all" "checkbox"
+    And I click on "With selected" "button"
+    And I click on question bulk action "deleteselected"
+    And I should see "The following question(s) will be deleted. You can't undo this."
+    And I should not see "(* Denotes questions which can't be deleted because they are in use. Instead, they will be hidden in the question bank unless you select 'Show old questions'.)"
+    And I press "Delete"
+    Then I should not see "Renamed question version2"
+    And I should not see "Question A"
+
+  @javascript
+  Scenario: Delete specific version of question
+    Given I am on the "Course 1" "core_question > course question bank" page logged in as "teacher1"
+    When I choose "Edit question" action for "Test question to be deleted" in the question bank
+    And I set the field "id_name" to "Renamed question version2"
+    And I set the field "id_questiontext" to "edited question"
+    And I press "id_submitbutton"
+    And I choose "Edit question" action for "Renamed question version2" in the question bank
+    And I set the field "id_name" to "Renamed question version3"
+    And I set the field "id_questiontext" to "edited question"
+    And I press "id_submitbutton"
+    And I choose "Edit question" action for "Renamed question version3" in the question bank
+    And I set the field "id_name" to "Renamed question version4"
+    And I set the field "id_questiontext" to "edited question"
+    And I press "id_submitbutton"
+    And I choose "History" action for "Renamed question version4" in the question bank
+    And I click on "Renamed question version2" "checkbox"
+    And I click on "Renamed question version3" "checkbox"
+    And I click on "With selected" "button"
+    And I click on question bulk action "deleteselected"
+    And I should see "The following question(s) will be deleted. You can't undo this."
+    And I should not see "(* Denotes questions which can't be deleted because they are in use. Instead, they will be hidden in the question bank unless you select 'Show old questions'.)"
+    And I press "Delete"
+    And I choose "History" action for "Renamed question version4" in the question bank
+    Then I should not see "Renamed question version2"
+    And I should not see "Renamed question version3"
+    And I should see "Test question to be deleted"
+    And I should see "Renamed question version4"

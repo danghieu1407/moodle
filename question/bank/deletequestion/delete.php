@@ -33,6 +33,7 @@ $deleteselected = optional_param('deleteselected', false, PARAM_BOOL);
 $returnurl = optional_param('returnurl', 0, PARAM_LOCALURL);
 $cmid = optional_param('cmid', 0, PARAM_INT);
 $courseid = optional_param('courseid', 0, PARAM_INT);
+$deleteall = optional_param('deleteall', 0,PARAM_INT);
 
 if ($returnurl) {
     $returnurl = new moodle_url($returnurl);
@@ -87,7 +88,14 @@ if ($deleteselected && ($confirm = optional_param('confirm', '', PARAM_ALPHANUM)
                     $DB->set_field('question_versions', 'status',
                         \core_question\local\bank\question_version_status::QUESTION_STATUS_HIDDEN, ['questionid' => $questionid]);
                 } else {
-                    question_delete_question($questionid);
+                    if ($deleteall) {
+                        $questionversions = \question_bank::get_all_versions_of_question($questionid);
+                        foreach ($questionversions as $questionversion) {
+                            question_delete_question($questionversion->questionid);
+                        }
+                    } else {
+                        question_delete_question($questionid);
+                    }
                 }
             }
         }
@@ -126,9 +134,11 @@ if ($deleteselected) {
     if ($inuse) {
         $questionnames .= '<br />'.get_string('questionsinuse', 'question');
     }
-    $deleteurl = new \moodle_url('/question/bank/deletequestion/delete.php',
-            array('deleteselected' => $questionlist, 'confirm' => md5($questionlist),
-            'sesskey' => sesskey(), 'returnurl' => $returnurl, 'cmid' => $cmid, 'courseid' => $courseid));
+    $deleteurl = new \moodle_url('/question/bank/deletequestion/delete.php', [
+        'deleteselected' => $questionlist, 'confirm' => md5($questionlist),
+        'sesskey' => sesskey(), 'returnurl' => $returnurl, 'cmid' => $cmid, 'courseid' => $courseid,
+        'deleteall' => $deleteall
+    ]);
 
     $continue = new \single_button($deleteurl, get_string('delete'), 'post');
     echo $OUTPUT->confirm(get_string('deletequestionscheck', 'question', $questionnames), $continue, $returnurl);
