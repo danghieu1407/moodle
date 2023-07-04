@@ -321,9 +321,8 @@ abstract class question_bank {
         [$listquestionid, $params] = $DB->get_in_or_equal($questionids, SQL_PARAMS_NAMED);
         $sql = "SELECT qv.questionid, qv.version, qv.questionbankentryid
                   FROM {question_versions} qv
-                 WHERE qv.questionbankentryid IN (SELECT qv.questionbankentryid
-                                                    FROM {question_versions} qv
-                                                   WHERE qv.questionid $listquestionid)";
+                  JOIN {question_versions} qv2 ON qv.questionbankentryid = qv2.questionbankentryid
+                 WHERE qv2.questionid $listquestionid";
         $result = [];
         $rows = $DB->get_recordset_sql($sql, $params);
         foreach ($rows as $row) {

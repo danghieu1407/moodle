@@ -31,14 +31,15 @@ class helper {
      *
      * @param array $questionids List of id questions.
      * @param bool $deleteallversions Delete all question version or not.
-     * @return string $message Confirmation of delete.
+     * @return array List confirmation message.
      */
-    public static function get_delete_confirmation_message(array $questionids, bool $deleteallversions): string {
+    public static function get_delete_confirmation_message(array $questionids, bool $deleteallversions): array {
         global $DB;
         $questionnames = '';
         $inuse = false;
         $hasmutipleversions = false;
         $questionversions = [];
+        $countselectedquestion = count($questionids);
         if ($deleteallversions) {
             $listofquestions = \question_bank::get_all_versions_of_questions($questionids);
             foreach ($listofquestions as $questionbankentry) {
@@ -48,7 +49,8 @@ class helper {
                 // Flip the array to list question by question id. [ qid => qversion ].
                 $questionversions += array_flip($questionbankentry);
             }
-            $questionids = call_user_func_array('array_merge', $listofquestions);
+            // Flatten an array.
+            $questionids = array_merge(...$listofquestions);
         }
         [$questionsql, $params] = $DB->get_in_or_equal($questionids, SQL_PARAMS_NAMED);
         $questions = $DB->get_records_select('question', 'id ' . $questionsql, $params,
@@ -58,25 +60,39 @@ class helper {
                 $questionnames .= '* ';
                 $inuse = true;
             }
+            $questionname = format_string($question->name);
             if (isset($questionversions[$question->id])) {
-                $questionnames .= $question->name . ' v' . $questionversions[$question->id] .'<br />';
+                $a = new \stdClass();
+                $a->name = $questionname;
+                $a->version = $questionversions[$question->id];
+                $questionnames .= get_string('questionnameandquestionversion',
+                    'question', $a) . '<br />';
             } else {
-                $questionnames .= $question->name . '<br />';
+                $questionnames .= $questionname . '<br />';
             }
         }
         if ($inuse) {
             $questionnames .= '<br />'.get_string('questionsinuse', 'question');
         }
+        $confirmtitle = [
+            'confirmtitle' => $countselectedquestion > 1 ? get_string('deleteversiontitle_plural',
+                'question') : get_string('deleteversiontitle', 'question'),
+        ];
         $message = get_string('deleteselectedquestioncheck', 'question', $questionnames);
         if ($deleteallversions) {
-            if ($hasmutipleversions) {
-                $message = get_string('deletequestionsallversioncheck', 'question', $questionnames);
-            } else {
+            $confirmtitle = [
+                'confirmtitle' => get_string('deletequestiontitle', 'question'),
+            ];
+            $message = get_string('deletequestioncheck', 'question', $questionnames);
+            if ($countselectedquestion > 1) {
+                $confirmtitle = [
+                    'confirmtitle' => get_string('deletequestiontitle_plural', 'question'),
+                ];
                 $message = get_string('deletequestionscheck', 'question', $questionnames);
             }
         }
 
-        return $message;
+        return [$confirmtitle, $message];
     }
 
     /**
@@ -89,7 +105,8 @@ class helper {
         if ($deleteallversions) {
             // Get all the question id from multidimensional array.
             $listofquestions = \question_bank::get_all_versions_of_questions($questionids);
-            $questionids = call_user_func_array('array_merge', $listofquestions);
+            // Flatten an array.
+            $questionids = array_merge(...$listofquestions);
         }
         foreach ($questionids as $questionid) {
             $questionid = (int) $questionid;

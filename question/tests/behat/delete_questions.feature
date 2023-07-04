@@ -51,7 +51,7 @@ Feature: A teacher can delete questions in the question bank
       | Test used question to be deleted | 1    | 0               |
     When I am on the "Course 1" "core_question > course question bank" page
     And I choose "Delete" action for "Test used question to be deleted" in the question bank
-    And I should see "This will delete the following questions:"
+    And I should see "This will delete the following question and all its versions:"
     And I should see "* Denotes questions which can't be deleted because they are in use. Instead, they will be hidden in the question bank unless you select 'Show old questions'."
     And I press "Delete"
     Then I should not see "Test used question to be deleted"
@@ -79,7 +79,7 @@ Feature: A teacher can delete questions in the question bank
       | questioncategory | question                    | questiontext                          |
       | Test questions   | Test question to be deleted | Test question to be deleted version 2 |
     And I choose "Delete" action for "Test question to be deleted" in the question bank
-    And I should see "This will delete all versions of the following questions:"
+    And I should see "This will delete the following question and all its versions:"
     And I should not see "* Denotes questions which can't be deleted because they are in use. Instead, they will be hidden in the question bank unless you select 'Show old questions'."
     And I press "Delete"
     Then I should not see "Test question to be deleted"

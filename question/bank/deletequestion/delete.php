@@ -111,13 +111,10 @@ if ($deleteselected) {
         'sesskey' => sesskey(), 'returnurl' => $returnurl, 'cmid' => $cmid, 'courseid' => $courseid,
     ]);
     $continue = new \single_button($deleteurl, get_string('delete'), 'post');
-    $displayoptions = [
-        'confirmtitle' => get_string('deletequestionstitle', 'question'),
-    ];
 
     $questionids = explode(',', $questionlist);
-
-    $message = qbank_deletequestion\helper::get_delete_confirmation_message($questionids, $deleteall);
+    [$displayoptions, $message] = qbank_deletequestion\helper::get_delete_confirmation_message($questionids,
+        $deleteall);
 
     echo $OUTPUT->confirm($message, $continue, $returnurl, $displayoptions);
 }

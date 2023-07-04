@@ -73,39 +73,69 @@ class helper_test extends \advanced_testcase {
     public function test_get_delete_confirmation_message(): void {
         $qcategory = $this->qgenerator->create_question_category(['contextid' => $this->context->id]);
         $question = $this->qgenerator->create_question('shortanswer', null, ['category' => $qcategory->id,
-            'name' => 'Question 1 version 1']);
+            'name' => 'Question 1']);
         $questionfirstversionid = $question->id;
 
-        // Verify confirm message with question not in use in question bank page.
+        // Verify confirmation title and confirmation message with question not in use in question bank page.
         $deleteallversions = true;
-        $message1 = \qbank_deletequestion\helper::get_delete_confirmation_message([$questionfirstversionid], $deleteallversions);
-        $this->assertStringContainsString(get_string('deletequestionscheck', 'question',
-            $question->name), $message1);
+        [$title1, $message1] = \qbank_deletequestion\helper::get_delete_confirmation_message([$questionfirstversionid],
+            $deleteallversions);
+        $this->assertEquals(['confirmtitle' => get_string('deletequestiontitle', 'question')],
+            $title1);
+        $this->assertEquals(get_string('deletequestioncheck', 'question',
+            $question->name). ' v1' . '<br />', $message1);
 
-        // Create a new version and try to remove it after adding it to a quiz.
-        $question2 = $this->qgenerator->update_question($question, null, ['name' => 'Question 1 version 2']);
+        // Create a new version and adding it to a quiz.
+        $question2 = $this->qgenerator->update_question($question, null, ['name' => 'Question 1']);
         $questionsecondversionid = $question2->id;
 
-        // Verify confirm message with question has multiple versions in question bank page.
-        $message2 = \qbank_deletequestion\helper::get_delete_confirmation_message([$questionsecondversionid], $deleteallversions);
-        $listnameofquestionversion = $question->name . ' v1' . '<br />' . $question2->name . ' v2' .'<br />';
-        $this->assertStringContainsString(get_string('deletequestionsallversioncheck', 'question',
-            $listnameofquestionversion), $message2);
+        // Verify confirmation title and confirmation message with question has multiple versions in question bank page.
+        $listnameofquestionversion2 = $question->name . ' v1' . '<br />' . $question2->name . ' v2' .'<br />';
+        [$title2, $message2] = \qbank_deletequestion\helper::get_delete_confirmation_message([$questionsecondversionid],
+            $deleteallversions);
+        $this->assertEquals(['confirmtitle' => get_string('deletequestiontitle', 'question')],
+            $title2);
+        $this->assertEquals(get_string('deletequestioncheck', 'question',
+            $listnameofquestionversion2), $message2);
+
+        // Verify confirmation title and confirmation message with multiple question selected.
+        $listnameofquestionversion3 = $question->name . ' v1' . '<br />' . $question2->name . ' v2' .'<br />';
+        [$title3, $message3] = \qbank_deletequestion\helper::get_delete_confirmation_message([$questionfirstversionid,
+            $questionsecondversionid], $deleteallversions);
+        $this->assertEquals(['confirmtitle' => get_string('deletequestiontitle_plural', 'question')],
+            $title3);
+        $this->assertEquals(get_string('deletequestionscheck', 'question',
+            $listnameofquestionversion3), $message3);
 
         // Add second question version to the quiz to become question in use.
         quiz_add_quiz_question($questionsecondversionid, $this->quiz);
 
-        // Verify confirm message with question in use and has multiple versions in question bank page.
-        $message3 = \qbank_deletequestion\helper::get_delete_confirmation_message([$questionsecondversionid], $deleteallversions);
-        $listnameofquestionversion = $question->name . ' v1' . '<br />' . '* ' . $question2->name . ' v2' . '<br />';
-        $this->assertStringContainsString(get_string('deletequestionsallversioncheck', 'question',
-            $listnameofquestionversion) . '<br />' . get_string('questionsinuse', 'question'), $message3);
+        // Verify confirmation message with question in use and has multiple versions in question bank page.
+        $listnameofquestionversion4 = $question->name . ' v1' . '<br />' . '* ' . $question2->name . ' v2' . '<br />';
+        $message4 = \qbank_deletequestion\helper::get_delete_confirmation_message([$questionsecondversionid],
+            $deleteallversions)[1];
+        $this->assertEquals(get_string('deletequestioncheck', 'question',
+            $listnameofquestionversion4) . '<br />' . get_string('questionsinuse',
+                'question'), $message4);
 
-        // Verify confirm message in history page.
+        // Verify confirmation title and confirmation message in history page with one question selected.
         $deleteallversions = false;
-        $message3 = \qbank_deletequestion\helper::get_delete_confirmation_message([$questionfirstversionid], $deleteallversions);
-        $this->assertStringContainsString(get_string('deleteselectedquestioncheck', 'question',
-            $question->name), $message3);
+        [$title5, $message5] = \qbank_deletequestion\helper::get_delete_confirmation_message([$questionfirstversionid],
+            $deleteallversions);
+        $this->assertEquals(['confirmtitle' => get_string('deleteversiontitle', 'question')],
+            $title5);
+        $this->assertEquals(get_string('deleteselectedquestioncheck', 'question',
+            $question->name) . '<br />', $message5);
+
+        // Verify confirmation title and confirmation message in history page with multiple question selected.
+        $listnameofquestionversion6 = 'Question 1<br />* Question 1<br />';
+        [$title6, $message6] = \qbank_deletequestion\helper::get_delete_confirmation_message([$questionfirstversionid,
+            $questionsecondversionid], $deleteallversions);
+        $this->assertEquals(['confirmtitle' => get_string('deleteversiontitle_plural', 'question')],
+            $title6);
+        $this->assertEquals(get_string('deleteselectedquestioncheck', 'question',
+            $listnameofquestionversion6) . '<br />'. get_string('questionsinuse', 'question'),
+                $message6);
     }
 
     /**
