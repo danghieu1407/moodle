@@ -33332,6 +33332,15 @@ textarea[data-auto-rows] {
   }
 }
 
+.mform .col-md-9.form-inline fieldset div.form-group label + span,
+.mform .col-md-9.form-inline .form-control-static {
+  padding-top: calc(0.375rem + 1px);
+}
+
+.mform .form-inline .form-group {
+  margin-top: unset;
+}
+
 [data-fieldtype=modgrade] .form-group {
   padding-bottom: 0.375rem;
 }

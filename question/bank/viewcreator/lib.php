@@ -23,6 +23,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use qbank_history\helper;
+use qbank_managecategories\category_condition;
+
 /**
  * Edit page callback for information.
  *
@@ -30,10 +33,32 @@
  * @return string
  */
 function qbank_viewcreator_edit_form_display($question): string {
-    global $DB, $PAGE;
+    global $DB, $PAGE, $OUTPUT;
+
     $versiondata = [];
-    $questionversion = $DB->get_record('question_versions', ['questionid' => $question->id])->version;
-    $versiondata['versionnumber'] = $questionversion;
+    // Get questionbankentryid and pass it to versiondata.
+    $versiondata['entryid'] = question_bank::load_question($question->id)->questionbankentryid;
+
+    // Get question version info.
+    $versioninfo = new \core_question\output\question_version_info(question_bank::load_question($question->id), true);
+    $exportversioninfo = $versioninfo->export_for_template($OUTPUT);
+    $versiondata['versionnumber'] = $exportversioninfo['versioninfo'];
+
+    // Add question category to filter.
+    $versiondata['filter']['category'] = [
+        'jointype' => category_condition::JOINTYPE_DEFAULT,
+        'values' => [$question->questioncategoryid],
+        'filteroptions' => ['includesubcategories' => false],
+    ];
+    $versiondata['filter'] = json_encode($versiondata['filter']);
+
+    // Set params filter to returnurl.
+    $returnurl = $PAGE->url;
+    $returnurl->param('filter', $versiondata['filter']);
+
+    // Get question history url and pass it to versiondata.
+    $versiondata['historyurl'] = helper::question_history_url($versiondata['entryid'],
+        $returnurl, $PAGE->course->id, $versiondata['filter']);
     if (!empty($question->createdby)) {
         $a = new stdClass();
         $a->time = userdate($question->timecreated);

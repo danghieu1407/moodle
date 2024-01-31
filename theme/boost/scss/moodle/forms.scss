@@ -414,6 +414,15 @@ textarea[data-auto-rows] {
     }
 }
 
+.mform .col-md-9.form-inline fieldset div.form-group label + span,
+.mform .col-md-9.form-inline .form-control-static {
+    padding-top: add($input-padding-y, $input-border-width);
+}
+
+.mform .form-inline .form-group {
+    margin-top: unset;
+}
+
 [data-fieldtype="modgrade"] .form-group {
     padding-bottom: $input-padding-y;
 }
