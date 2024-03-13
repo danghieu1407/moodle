@@ -175,6 +175,11 @@ class view {
     public $bulkactions = [];
 
     /**
+     * @var int $showhidden whether to show hidden questions.
+     */
+    public $showhidden;
+
+    /**
      * Constructor for view.
      *
      * @param \core_question\local\bank\question_edit_contexts $contexts
@@ -616,15 +621,22 @@ class view {
             list($colname, $subsort) = $this->parse_subsort($sort);
             $sorts[] = $this->requiredcolumns[$colname]->sort_expression($order < 0, $subsort);
         }
+        $this->sqlparams = [];
+        $sqlwhere = '';
+        if (isset($this->showhidden) && $this->showhidden === 0) {
+            $sqlwhere = ' AND v.status <> :status';
+            $this->sqlparams = array_merge($this->sqlparams, [
+                'status' => question_version_status::QUESTION_STATUS_HIDDEN,
+            ]);
+        }
 
         // Build the where clause.
         $latestversion = 'qv.version = (SELECT MAX(v.version)
                                           FROM {question_versions} v
                                           JOIN {question_bank_entries} be
                                             ON be.id = v.questionbankentryid
-                                         WHERE be.id = qbe.id)';
+                                         WHERE be.id = qbe.id ' . $sqlwhere . ')';
         $tests = ['q.parent = 0', $latestversion];
-        $this->sqlparams = [];
         foreach ($this->searchconditions as $searchcondition) {
             if ($searchcondition->where()) {
                 $tests[] = '((' . $searchcondition->where() .'))';
@@ -758,7 +770,7 @@ class view {
         $perpage = $pagevars['qperpage'];
         $cat = $pagevars['cat'];
         $recurse = $pagevars['recurse'];
-        $showhidden = $pagevars['showhidden'];
+        $this->showhidden = $pagevars['showhidden'];
         $showquestiontext = $pagevars['qbshowtext'];
         $tagids = [];
         if (!empty($pagevars['qtagids'])) {
@@ -770,7 +782,7 @@ class view {
         $editcontexts = $this->contexts->having_one_edit_tab_cap($tabname);
 
         // Show the filters and search options.
-        $this->wanted_filters($cat, $tagids, $showhidden, $recurse, $editcontexts, $showquestiontext);
+        $this->wanted_filters($cat, $tagids, $this->showhidden, $recurse, $editcontexts, $showquestiontext);
 
         // Continues with list of questions.
         $this->display_question_list($this->baseurl, $cat, null, $page, $perpage,

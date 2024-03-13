@@ -288,7 +288,8 @@ class custom_view extends \core_question\local\bank\view {
                                           FROM {question_versions} v
                                           JOIN {question_bank_entries} be
                                             ON be.id = v.questionbankentryid
-                                         WHERE be.id = qbe.id)';
+                                         WHERE be.id = qbe.id
+                                         AND v.status <> :status)';
         $readyonly = "qv.status = '" . question_version_status::QUESTION_STATUS_READY . "' ";
         $tests = ['q.parent = 0', $latestversion, $readyonly];
         $this->sqlparams = [];
@@ -300,6 +301,9 @@ class custom_view extends \core_question\local\bank\view {
                 $this->sqlparams = array_merge($this->sqlparams, $searchcondition->params());
             }
         }
+        $this->sqlparams = array_merge($this->sqlparams, [
+            'status' => question_version_status::QUESTION_STATUS_HIDDEN,
+        ]);
         // Build the SQL.
         $sql = ' FROM {question} q ' . implode(' ', $joins);
         $sql .= ' WHERE ' . implode(' AND ', $tests);
