@@ -730,14 +730,22 @@ class view {
             [$colname, $subsort] = $this->parse_subsort($sortname);
             $sorts[] = $this->requiredcolumns[$colname]->sort_expression($sortorder == SORT_DESC, $subsort);
         }
+        $this->sqlparams = [];
+        $showhiddenquestions = $this->pagevars['filter']['hidden']['values'];
+        $sqlwhere = '';
+        if (isset($showhiddenquestions) && in_array(0, $showhiddenquestions)) {
+            $sqlwhere = ' AND v.status <> :status';
+            $this->sqlparams = array_merge($this->sqlparams, [
+                'status' => question_version_status::QUESTION_STATUS_HIDDEN,
+            ]);
+        }
 
         // Build the where clause.
         $latestversion = 'qv.version = (SELECT MAX(v.version)
                                           FROM {question_versions} v
                                           JOIN {question_bank_entries} be
                                             ON be.id = v.questionbankentryid
-                                         WHERE be.id = qbe.id)';
-        $this->sqlparams = [];
+                                         WHERE be.id = qbe.id ' . $sqlwhere . ')';
         $conditions = [];
         foreach ($this->searchconditions as $searchcondition) {
             if ($searchcondition->where()) {
