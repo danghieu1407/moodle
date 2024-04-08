@@ -288,10 +288,10 @@ class custom_view extends \core_question\local\bank\view {
                                           FROM {question_versions} v
                                           JOIN {question_bank_entries} be
                                             ON be.id = v.questionbankentryid
-                                         WHERE be.id = qbe.id)';
-        $readyonly = "qv.status = '" . question_version_status::QUESTION_STATUS_READY . "' ";
-        $tests = ['q.parent = 0', $latestversion, $readyonly];
-        $this->sqlparams = [];
+                                         WHERE be.id = qbe.id
+                                               AND v.status = :status)';
+        $this->sqlparams = ['status' => question_version_status::QUESTION_STATUS_READY];
+        $tests = ['q.parent = 0', $latestversion];
         foreach ($this->searchconditions as $searchcondition) {
             if ($searchcondition->where()) {
                 $tests[] = '((' . $searchcondition->where() .'))';
