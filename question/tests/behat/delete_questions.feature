@@ -97,9 +97,8 @@ Feature: A teacher can delete questions in the question bank
     And quiz "Test quiz" contains the following questions:
       | question                    | page | requireprevious |
       | Test question to be deleted | 1    | 0               |
-    When I reload the page
+    And I choose "History" action for "Test question to be deleted" in the question bank
     And I should see "Essay question (HTML editor)"
-    And I choose "History" action for "Essay question (HTML editor)" in the question bank
     And I choose "Delete" action for "Essay question (HTML editor)" in the question bank
     And I press "Delete"
     And I am on the "Course 1" "core_question > course question bank" page logged in as "teacher1"

@@ -34,6 +34,7 @@ use core_question\local\bank\column_manager_base;
 use core_question\local\bank\question_version_status;
 use mod_quiz\question\bank\filter\custom_category_condition;
 use qbank_managecategories\category_condition;
+use question_bank;
 
 require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 /**
@@ -241,13 +242,10 @@ class custom_view extends \core_question\local\bank\view {
         }
 
         // Build the where clause.
-        $latestversion = 'qv.version = (SELECT MAX(v.version)
-                                          FROM {question_versions} v
-                                          JOIN {question_bank_entries} be
-                                            ON be.id = v.questionbankentryid
-                                         WHERE be.id = qbe.id
-                                               AND v.status = :status)';
-        $this->sqlparams = ['status' => question_version_status::QUESTION_STATUS_READY];
+        $latestversionsql = question_bank::get_latest_version_of_question_sql();
+        $latestversion = "qv.version = ($latestversionsql AND v.status <> :hidden)";
+        $this->sqlparams = ['hidden' => question_version_status::QUESTION_STATUS_HIDDEN];
+        $onlyready = '((' . "qv.status = '" . question_version_status::QUESTION_STATUS_READY . "'" .'))';
         $conditions = [];
         foreach ($this->searchconditions as $searchcondition) {
             if ($searchcondition->where()) {
@@ -257,7 +255,7 @@ class custom_view extends \core_question\local\bank\view {
                 $this->sqlparams = array_merge($this->sqlparams, $searchcondition->params());
             }
         }
-        $majorconditions = ['q.parent = 0', $latestversion];
+        $majorconditions = ['q.parent = 0', $latestversion, $onlyready];
         // Get higher level filter condition.
         $jointype = isset($this->pagevars['jointype']) ? (int)$this->pagevars['jointype'] : condition::JOINTYPE_DEFAULT;
         $nonecondition = ($jointype === datafilter::JOINTYPE_NONE) ? ' NOT ' : '';

@@ -20,6 +20,7 @@ use context;
 use core_question\local\bank\question_version_status;
 use moodle_exception;
 use html_writer;
+use question_bank;
 
 /**
  * Class helper contains all the library functions.
@@ -257,24 +258,22 @@ class helper {
                                                        bool $top = false, int $showallversions = 0): array {
         global $DB;
         $topwhere = $top ? '' : 'AND c.parent <> 0';
+        $latestversionsql = question_bank::get_latest_version_of_question_sql();
         $statuscondition = "AND (qv.status = '". question_version_status::QUESTION_STATUS_READY . "' " .
             " OR qv.status = '" . question_version_status::QUESTION_STATUS_DRAFT . "' )";
-
+        $params = [
+            'vstatus' => question_version_status::QUESTION_STATUS_HIDDEN,
+        ];
         $sql = "SELECT c.*,
                     (SELECT COUNT(1)
                        FROM {question} q
                        JOIN {question_versions} qv ON qv.questionid = q.id
                        JOIN {question_bank_entries} qbe ON qbe.id = qv.questionbankentryid
                       WHERE q.parent = '0'
-                        $statuscondition
+                            $statuscondition
                             AND c.id = qbe.questioncategoryid
                             AND ($showallversions = 1
-                                OR (qv.version = (SELECT MAX(v.version)
-                                                    FROM {question_versions} v
-                                                    JOIN {question_bank_entries} be ON be.id = v.questionbankentryid
-                                                   WHERE be.id = qbe.id
-                                                         AND v.status = '" .
-                                                             question_version_status::QUESTION_STATUS_READY . "')
+                                OR (qv.version = ($latestversionsql AND v.status <> :vstatus)
                                    )
                                 )
                             ) AS questioncount
@@ -282,7 +281,7 @@ class helper {
                  WHERE c.contextid IN ($contexts) $topwhere
               ORDER BY $sortorder";
 
-        return $DB->get_records_sql($sql);
+        return $DB->get_records_sql($sql, $params);
     }
 
     /**
