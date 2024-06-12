@@ -22,6 +22,9 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['defaultdisplaymode'] = 'Default display mode';
+$string['disabled'] = 'Disabled';
+$string['enabled'] = 'Enabled';
 $string['manageplugins'] = 'Manage restrictions';
 $string['pluginname'] = 'Availability condition management';
 $string['privacy:metadata'] = 'The Availability condition management plugin does not store any personal data.';

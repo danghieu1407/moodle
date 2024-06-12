@@ -16,7 +16,7 @@ Feature: I can apply presets
     Given I navigate to "Plugins > Activity modules > Manage activities" in site administration
     And "Disable Database" "icon" should exist in the "Database" "table_row"
     And I navigate to "Plugins > Availability restrictions > Manage restrictions" in site administration
-    And "Hide" "icon" should exist in the "Restriction by grouping" "table_row"
+    And "Hide" "icon" should exist in the ".enable-control-grouping" "css_element"
     And I navigate to "Plugins > Blocks > Manage blocks" in site administration
     And "Disable Logged in user" "icon" should exist in the "Logged in user" "table_row"
     And I navigate to "Plugins > Course formats > Manage course formats" in site administration
@@ -111,7 +111,7 @@ Feature: I can apply presets
     And I navigate to "Plugins > Activity modules > Manage activities" in site administration
     And "Disable Database" "icon" should not exist in the "Database" "table_row"
     And I navigate to "Plugins > Availability restrictions > Manage restrictions" in site administration
-    And "Hide" "icon" should not exist in the "Restriction by grouping" "table_row"
+    And "Hide" "icon" should not exist in the ".enable-control-grouping" "css_element"
     And I navigate to "Plugins > Blocks > Manage blocks" in site administration
     And "Disable Logged in user" "icon" should not exist in the "Logged in user" "table_row"
     And I navigate to "Plugins > Course formats > Manage course formats" in site administration

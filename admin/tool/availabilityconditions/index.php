@@ -44,20 +44,28 @@ core_collator::asort($plugins);
 
 // Do plugin actions.
 $pageurl = new moodle_url('/' . $CFG->admin . '/tool/availabilityconditions/');
+$classavailability = \core_plugin_manager::resolve_plugininfo_class('availability');
 if (($plugin = optional_param('plugin', '', PARAM_PLUGIN))) {
     require_sesskey();
     if (!array_key_exists($plugin, $plugins)) {
         throw new \moodle_exception('invalidcomponent', 'error', $pageurl);
     }
-    $action = required_param('action', PARAM_ALPHA);
+    $action = optional_param('action', '', PARAM_ALPHA);
     switch ($action) {
         case 'hide' :
-            $class = \core_plugin_manager::resolve_plugininfo_class('availability');
-            $class::enable_plugin($plugin, false);
+            $classavailability::enable_plugin($plugin, false);
             break;
         case 'show' :
-            $class = \core_plugin_manager::resolve_plugininfo_class('availability');
-            $class::enable_plugin($plugin, true);
+            $classavailability::enable_plugin($plugin, true);
+            break;
+    }
+    $displaymode = optional_param('displaymode', '', PARAM_ALPHA);
+    switch ($displaymode) {
+        case 'hide' :
+            $classavailability::update_display_mode($plugin, false);
+            break;
+        case 'show' :
+            $classavailability::update_display_mode($plugin, true);
             break;
     }
 
@@ -70,9 +78,13 @@ echo $OUTPUT->heading(get_string('manageplugins', 'availability'));
 
 // Show a table of installed availability conditions.
 $table = new flexible_table('availabilityconditions_administration_table');
-$table->define_columns(array('name', 'version', 'enable'));
-$table->define_headers(array(get_string('plugin'),
-        get_string('version'), get_string('hide') . '/' . get_string('show')));
+$table->define_columns(['name', 'version', 'enable', 'defaultdisplaymode']);
+$table->define_headers([
+    get_string('plugin'),
+    get_string('version'),
+    get_string('enabled', 'tool_availabilityconditions') . '/' . get_string('disabled', 'tool_availabilityconditions'),
+    get_string('defaultdisplaymode', 'tool_availabilityconditions'),
+]);
 $table->define_baseurl($PAGE->url);
 $table->set_attribute('id', 'availabilityconditions');
 $table->set_attribute('class', 'admintable generaltable');
@@ -103,11 +115,21 @@ foreach ($plugins as $plugin => $name) {
 
     // Make enable control. This is a POST request (using a form control rather
     // than just a link) because it makes a database change.
-    $params = array('sesskey' => sesskey(), 'plugin' => $plugin, 'action' => $enabledaction);
-    $url = new moodle_url('/' . $CFG->admin . '/tool/availabilityconditions/', $params);
-    $enablecontrol = html_writer::link($url, $OUTPUT->pix_icon('t/' . $enabledaction, $enabledstr));
+    $paramsenablecontrol = ['sesskey' => sesskey(), 'plugin' => $plugin, 'action' => $enabledaction];
+    $urlenablecontrol = new moodle_url('/' . $CFG->admin . '/tool/availabilityconditions/', $paramsenablecontrol);
+    $enablecontrol = html_writer::link($urlenablecontrol, $OUTPUT->pix_icon('t/' . $enabledaction, $enabledstr),
+        ['class' => 'enable-control-' . $plugin]);
 
-    $table->add_data([$name, $version, $enablecontrol], $class);
+    // Get config for display mode.
+    $displaymode = !!get_config('availability_' . $plugin, 'defaultdisplaymode') ? 'show' : 'hide';
+
+    // Display mode POST request.
+    $paramsdisplaymode = ['sesskey' => sesskey(), 'plugin' => $plugin, 'displaymode' => $displaymode];
+    $urldisplaymode = new moodle_url('/' . $CFG->admin . '/tool/availabilityconditions/', $paramsdisplaymode);
+    $enabledisplaymode = html_writer::link($urldisplaymode, $OUTPUT->pix_icon('t/' . $displaymode,
+        get_string($displaymode)), ['class' => 'display-mode-' . $plugin]);
+
+    $table->add_data([$name, $version, $enablecontrol, $enabledisplaymode], $class);
 }
 
 $table->print_html();
