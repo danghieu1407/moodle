@@ -7,14 +7,16 @@ Feature: Moving a question to another category should not affect random question
 
   Background:
     Given the following "users" exist:
-      | username | firstname | lastname | email |
-      | teacher1 | Teacher | 1 | teacher1@example.com |
+      | username | firstname | lastname | email                |
+      | teacher1 | Teacher   | 1        | teacher1@example.com |
+      | student1 | student   | 1        | student1@example.com |
     And the following "courses" exist:
       | fullname | shortname | format |
-      | Course 1 | C1 | weeks |
+      | Course 1 | C1        | weeks  |
     And the following "course enrolments" exist:
-      | user | course | role |
-      | teacher1 | C1 | editingteacher |
+      | user     | course | role           |
+      | teacher1 | C1     | editingteacher |
+      | student1 | C1     | student        |
     And the following "activities" exist:
       | activity   | name    | intro                                           | course | idnumber |
       | quiz       | Quiz 1  | Quiz 1 for testing the Add random question form | C1     | quiz1    |
@@ -101,3 +103,34 @@ Feature: Moving a question to another category should not affect random question
     And I am on the "Quiz 1" "mod_quiz > Edit" page logged in as "teacher1"
     Then I should not see "Random (Used category) based on filter condition" on quiz page "1"
     And I should see "Missing question category" on quiz page "1"
+
+  @javascript @switch_window
+  Scenario: Student was in the process of attempting the random question, but the teacher deleted it.
+    Given I am on the "Quiz 1" "mod_quiz > question bank" page logged in as "teacher1"
+    And I apply question bank filter "Category" with value "Used category"
+    # Update question version.
+    When I choose "Edit" action for "Test question to be moved" in the question bank
+    And I set the following fields to these values:
+      | Question name  | Test question to be moved(v2) |
+      | Question text  | Answer the new Test question  |
+    And I press "id_submitbutton"
+    And I am on the "Quiz 1" "mod_quiz > Edit" page
+    # Add random question.
+    And I open the "last" add to quiz menu
+    And I follow "a random question"
+    And I apply question bank filter "Category" with value "Used category"
+    And I press "Add random question"
+    And I should see "Random question based on filter condition" on quiz page "1"
+    And I open a tab named "CourseViewer2" on the "C1" "Course" page
+    And I am on the "Quiz 1" "mod_quiz > View" page
+    And I press "Preview quiz"
+    And I am on the "Quiz 1" "mod_quiz > View" page
+    Then I should see "Continue the last preview"
+    And I switch to the main window
+    And I am on the "Quiz 1" "mod_quiz > question bank" page
+    And I apply question bank filter "Category" with value "Used category"
+    And I choose "Delete" action for "Test question to be moved" in the question bank
+    And I press "Delete"
+    And I switch to "CourseViewer2" tab
+    And I am on the "Quiz 1" "mod_quiz > View" page
+    And I should see "Preview quiz"
