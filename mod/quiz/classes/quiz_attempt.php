@@ -2423,6 +2423,9 @@ class quiz_attempt {
         $versioninformation = qbank_helper::get_version_information_for_questions_in_attempt(
             $this->attempt, $this->get_context());
 
+        if (!$versioninformation) {
+            quiz_delete_attempt($this->attempt, $this->get_quiz());
+        }
         $anychanges = false;
         foreach ($versioninformation as $slotinformation) {
             if ($slotinformation->currentquestionid == $slotinformation->newquestionid) {
