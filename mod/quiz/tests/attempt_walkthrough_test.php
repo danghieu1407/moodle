@@ -202,6 +202,65 @@ final class attempt_walkthrough_test extends \advanced_testcase {
     }
 
     /**
+     * Test attempt quiz with start attempt random question while delete question version in use.
+     */
+    public function test_quiz_with_start_attempt_random_question_while_delete_question_version_in_use(): void {
+        global $SITE, $USER;
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        $user = $USER;
+
+        // Make a quiz.
+        $quizgenerator = $this->getDataGenerator()->get_plugin_generator('mod_quiz');
+
+        $quiz = $quizgenerator->create_instance(['course' => $SITE->id, 'questionsperpage' => 0, 'grade' => 100.0,
+            'sumgrades' => 3]);
+
+        // Question generator.
+        $questiongenerator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $cat = $questiongenerator->create_question_category();
+        $cat2 = $questiongenerator->create_question_category();
+
+        $question1v1 = $questiongenerator->create_question('shortanswer', null, ['category' => $cat->id]);
+        $question1v2 = $questiongenerator->update_question($question1v1,
+            null, ['name' => 'This is the latest version']);
+
+        $question2v1 = $questiongenerator->create_question('essay', null, ['category' => $cat2->id]);
+        $question2v2 = $questiongenerator->update_question($question2v1,
+            null, ['name' => 'This is the latest version']);
+
+        // Add random question to quiz.
+        $this->add_random_questions($quiz->id, 1, $cat->id, 1);
+        $this->add_random_questions($quiz->id, 1, $cat2->id, 1);
+
+        // Start attempt.
+        $quizobj = quiz_settings::create($quiz->id, $user->id);
+        $attempt = quiz_prepare_and_start_new_attempt($quizobj, 1, null);
+        $attemptobj = quiz_attempt::create($attempt->id);
+
+        // Delete question version 2.
+        \qbank_deletequestion\helper::delete_questions([$question1v2->id], false);
+        \qbank_deletequestion\helper::delete_questions([$question2v2->id], false);
+
+        // Update the attempt to use this questions.
+        try {
+            $attemptobj->update_questions_to_new_version_if_changed();
+            $this->fail('Exception expected due to preview is deleted');
+        } catch (\moodle_exception $e) {
+            $this->assertEquals('attempterrorcontentchange', $e->errorcode);
+        }
+
+        // Start attempt again.
+        $attempt = quiz_prepare_and_start_new_attempt($quizobj, 1, null);
+        $attemptobj = quiz_attempt::create($attempt->id);
+
+        // Verify.
+        $this->assertEquals($question1v1->id, $attemptobj->get_question_attempt(1)->get_question_id());
+        $this->assertEquals($question2v1->id, $attemptobj->get_question_attempt(2)->get_question_id());
+    }
+
+    /**
      * Create a quiz containing one question and a close time.
      *
      * The question is the standard shortanswer test question.
