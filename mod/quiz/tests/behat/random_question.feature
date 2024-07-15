@@ -7,14 +7,16 @@ Feature: Moving a question to another category should not affect random question
 
   Background:
     Given the following "users" exist:
-      | username | firstname | lastname | email |
-      | teacher1 | Teacher | 1 | teacher1@example.com |
+      | username | firstname | lastname | email                |
+      | teacher1 | Teacher   | 1        | teacher1@example.com |
+      | student1 | student   | 1        | student1@example.com |
     And the following "courses" exist:
       | fullname | shortname | format |
-      | Course 1 | C1 | weeks |
+      | Course 1 | C1        | weeks  |
     And the following "course enrolments" exist:
-      | user | course | role |
-      | teacher1 | C1 | editingteacher |
+      | user     | course | role           |
+      | teacher1 | C1     | editingteacher |
+      | student1 | C1     | student        |
     And the following "activities" exist:
       | activity   | name   | intro                                           | course | idnumber |
       | quiz       | Quiz 1 | Quiz 1 for testing the Add random question form | C1     | quiz1    |
