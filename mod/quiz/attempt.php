@@ -124,6 +124,7 @@ if (!$attemptobj->set_currentpage($page)) {
 
 if ($attemptobj->is_own_preview()) {
     $attemptobj->update_questions_to_new_version_if_changed();
+    quiz_create_attempt_handling_errors($attemptid, $cmid);
 }
 
 // Initialise the JavaScript.
