@@ -58,8 +58,4 @@ $observers = [
         'callback' => 'quiz_attempt_submitted_handler',
         'internal' => false
     ],
-    [
-        'eventname' => '\core\event\question_deleted',
-        'callback' => '\mod_quiz\question_observers::question_deleted',
-    ],
 ];
