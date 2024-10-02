@@ -332,7 +332,7 @@ function question_build_edit_resources($edittab, $baseurl, $params,
         $pagevars['cat'] = $cat; // If empty will be set up later.
     }
 
-    if ($pagevars['cat']){
+    if ($pagevars['cat'] && $thiscontext->contextlevel === CONTEXT_MODULE) {
         $thispageurl->param('cat', $pagevars['cat']);
     }
 
