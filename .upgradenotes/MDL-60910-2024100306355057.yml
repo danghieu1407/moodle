@@ -1,0 +1,7 @@
+issueNumber: MDL-60910
+notes:
+  qtype_ddimageortext:
+    - message: >-
+        The edit form now includes a new checkbox option to enable or disable transparency.
+        When this option is checked, both the preview background and the preview question will become transparent.
+      type: improved`
