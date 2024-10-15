@@ -1555,9 +1555,13 @@ function question_extend_settings_navigation(navigation_node $navigationnode, $c
         return;
     }
 
-    if (($cat = $PAGE->url->param('cat')) && preg_match('~\d+,\d+~', $cat) &&
-            $context->contextlevel === CONTEXT_MODULE) {
+    if (($cat = $PAGE->url->param('cat')) && preg_match('~\d+,\d+~', $cat)) {
         $params['cat'] = $cat;
+    }
+
+    // Remove the cat params from navigation URL if the page context is not the same as the navigation context.
+    if ($PAGE->context->id !== $context->id) {
+        unset($params['cat']);
     }
 
     $questionnode = $navigationnode->add(get_string('questionbank', 'question'),
