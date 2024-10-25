@@ -1559,6 +1559,11 @@ function question_extend_settings_navigation(navigation_node $navigationnode, $c
         $params['cat'] = $cat;
     }
 
+    // Remove the cat params from navigation URL if the page context is not the same as the navigation context.
+    if ($PAGE->context->id !== $context->id) {
+        unset($params['cat']);
+    }
+
     $questionnode = $navigationnode->add(get_string('questionbank', 'question'),
             new moodle_url($baseurl, $params), navigation_node::TYPE_CONTAINER, null, 'questionbank');
 
