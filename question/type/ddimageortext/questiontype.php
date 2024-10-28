@@ -53,6 +53,7 @@ class qtype_ddimageortext extends qtype_ddtoimage_base {
     public function save_defaults_for_new_questions(stdClass $fromform): void {
         parent::save_defaults_for_new_questions($fromform);
         $this->set_default_value('shuffleanswers', $fromform->shuffleanswers);
+        $this->set_default_value('transparentdropzone', $fromform->transparentdropzone);
     }
 
     public function save_question_options($formdata) {
@@ -70,6 +71,7 @@ class qtype_ddimageortext extends qtype_ddtoimage_base {
         }
 
         $options->shuffleanswers = !empty($formdata->shuffleanswers);
+        $options->transparentdropzone = !empty($formdata->transparentdropzone);
         $options = $this->save_combined_feedback_helper($options, $formdata, $context, true);
         $this->save_hints($formdata, true);
         $DB->update_record('qtype_ddimageortext', $options);
@@ -185,6 +187,9 @@ class qtype_ddimageortext extends qtype_ddtoimage_base {
         if ($question->options->shuffleanswers) {
             $output .= "    <shuffleanswers/>\n";
         }
+        if ($question->options->transparentdropzone) {
+            $output .= "    <transparentdropzone/>\n";
+        }
         $output .= $format->write_combined_feedback($question->options,
                                                     $question->id,
                                                     $question->contextid);
@@ -227,6 +232,8 @@ class qtype_ddimageortext extends qtype_ddtoimage_base {
 
         $question->shuffleanswers = array_key_exists('shuffleanswers',
                                                     $format->getpath($data, array('#'), array()));
+        $question->hidedropzone = array_key_exists('transparentdropzone',
+            $format->getpath($data, ['#'], []));
 
         $filexml = $format->getpath($data, array('#', 'file'), array());
         $question->bgimage = $format->import_files_as_draft($filexml);

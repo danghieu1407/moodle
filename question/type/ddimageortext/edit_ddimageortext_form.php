@@ -47,6 +47,7 @@ class qtype_ddimageortext_edit_form extends qtype_ddtoimage_edit_form_base {
         $dragids = array(); // Drag no -> dragid.
         if (!empty($question->options)) {
             $question->shuffleanswers = $question->options->shuffleanswers;
+            $question->transparentdropzone = $question->options->transparentdropzone;
             $question->drags = array();
             foreach ($question->options->drags as $drag) {
                 $dragindex = $drag->no - 1;
@@ -108,7 +109,9 @@ class qtype_ddimageortext_edit_form extends qtype_ddtoimage_edit_form_base {
 
     public function js_call() {
         global $PAGE;
-        $PAGE->requires->js_call_amd('qtype_ddimageortext/form', 'init');
+        $PAGE->requires->js_call_amd('qtype_ddimageortext/form', 'init', [
+            $this->question->options->transparentdropzone ?? '',
+        ]);
     }
 
     // Drag items.
@@ -168,6 +171,11 @@ class qtype_ddimageortext_edit_form extends qtype_ddtoimage_edit_form_base {
         $dropzoneitem = array();
 
         $grouparray = array();
+        $mform->addElement('advcheckbox', 'transparentdropzone',
+            get_string('transparentdropzone', 'qtype_ddimageortext'));
+        $mform->setDefault('transparentdropzone', $this->get_default_value('transparentdropzone', 0));
+        $mform->addElement('static', 'transparentdropzonedesc', '',
+            get_string('transparentdropzonedesc', 'qtype_ddimageortext'));
         $grouparray[] = $mform->createElement('text', 'xleft',
                                                 get_string('xleft', 'qtype_ddimageortext'),
                                                 array('size' => 5, 'class' => 'tweakcss'));

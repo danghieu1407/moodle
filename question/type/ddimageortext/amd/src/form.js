@@ -51,23 +51,25 @@ define(['jquery', 'core/dragdrop'], function($, dragDrop) {
         /**
          * Initialise the form javascript features.
          *
+         * @param {string} transparentdropzone Whether the dropzone transparent or not.
          * @method
          */
-        init: function() {
+        init: function(transparentdropzone) {
             dragDropToImageForm.fp = dragDropToImageForm.filePickers();
             dragDropToImageForm.updateVisibilityOfFilePickers();
             dragDropToImageForm.setOptionsForDragItemSelectors();
             dragDropToImageForm.setupEventHandlers();
-            dragDropToImageForm.waitForFilePickerToInitialise();
+            dragDropToImageForm.waitForFilePickerToInitialise(transparentdropzone);
         },
 
         /**
          * Add html for the preview area.
+         * @param {string} transparentdropzone Whether the dropzone transparent or not.
          */
-        setupPreviewArea: function() {
+        setupPreviewArea: function(transparentdropzone) {
             $('#id_previewareaheader').append(
                 '<div class="ddarea que ddimageortext">' +
-                '  <div id="id_droparea" class="droparea">' +
+                '  <div id="id_droparea" class="droparea ' + (transparentdropzone === '1' ? 'transparent ' : '') + '">' +
                 '    <img class="dropbackground" />' +
                 '    <div class="dropzones"></div>' +
                 '  </div>' +
@@ -77,8 +79,9 @@ define(['jquery', 'core/dragdrop'], function($, dragDrop) {
 
         /**
          * Waits for the file-pickers to be sufficiently ready before initialising the preview.
+         * @param {string} transparentdropzone Whether the dropzone transparent or not.
          */
-        waitForFilePickerToInitialise: function() {
+        waitForFilePickerToInitialise: function(transparentdropzone) {
             if (dragDropToImageForm.fp.file('bgimage').href === null) {
                 // It would be better to use an onload or onchange event rather than this timeout.
                 // Unfortunately attempts to do this early are overwritten by filepicker during its loading.
@@ -98,7 +101,7 @@ define(['jquery', 'core/dragdrop'], function($, dragDrop) {
                 dragDropToImageForm.loadPreviewImage();
             } else {
                 // Setup preview area when the background image is uploaded the first time.
-                dragDropToImageForm.setupPreviewArea();
+                dragDropToImageForm.setupPreviewArea(transparentdropzone);
                 dragDropToImageForm.loadPreviewImage();
             }
         },
