@@ -76,5 +76,7 @@ $string['summarisechoice'] = '{$a->no}. {$a->text}';
 $string['summariseplace'] = '{$a->no}. {$a->text}';
 $string['summarisechoiceno'] = 'Item {$a}';
 $string['summariseplaceno'] = 'Drop zone {$a}';
+$string['transparentdropzone'] = 'Make drop zone boxes transparent';
+$string['transparentdropzonedesc'] = 'Borders will still be visible when editing the question to help with setting the drop zone.';
 $string['xleft'] = 'Left';
 $string['ytop'] = 'Top';
