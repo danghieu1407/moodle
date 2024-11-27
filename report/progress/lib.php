@@ -122,7 +122,7 @@ function report_progress_myprofile_navigation(core_user\output\myprofile\tree $t
     }
     if (report_progress_can_access_user_report($user, $course)) {
         $url = new moodle_url('/report/progress/index.php',
-                array('id' => $user->id, 'course' => $course->id));
+            ['activityparticipant' => $user->id, 'course' => $course->id]);
         $node = new core_user\output\myprofile\node('reports', 'progress', get_string('pluginname','report_progress'), null, $url);
         $tree->add_node($node);
     }

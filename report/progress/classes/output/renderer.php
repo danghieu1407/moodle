@@ -114,6 +114,30 @@ class renderer extends plugin_renderer_base {
                 'activity-section-selector include-activity-selector d-inline-block ms-3');
     }
 
+    public function render_activity_participant_select(\moodle_url $url, array $participant, string $activityparticipant): string {
+        foreach ($participant as $key => $value) {
+            $result[$key] = $value;
+        }
+
+        $option = [0 => 'All participants'];
+        foreach ($result as $item) {
+            $fullname = $item->firstname . ' ' . $item->lastname;
+            $participantid = $item->id;
+            $option[$participantid] = $fullname;
+        }
+
+        $participanturl = fullclone($url);
+        $participanturl->remove_params(['activityparticipant']);
+        $participantselect = new single_select(
+            $participanturl, 'activityparticipant',
+            $option,
+            $activityparticipant, null, 'participant-select-report'
+        );
+        $participantselect->set_label(get_string('activityparticipant', 'report_progress'));
+        return \html_writer::div($this->output->render($participantselect),
+                'activity-participant-selector include-activity-selector d-inline-block ms-3');
+    }
+
     /**
      * Render download buttons.
      *
