@@ -36,7 +36,7 @@ require_once($CFG->dirroot . '/question/type/ddimageortext/questionbase.php');
  */
 class qtype_ddimageortext_question extends qtype_ddtoimage_question_base {
     /** @var string Whether the dropzone transparent or not. */
-    public $transparentdropzone;
+    public $dropzonevisibility;
 }
 
 
