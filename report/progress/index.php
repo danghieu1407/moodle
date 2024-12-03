@@ -316,12 +316,14 @@ foreach($activities as $activity) {
 
     if ($activity->completionexpected) {
         if ($csv) {
-            $datetext = userdate($activity->completionexpected, "%F %T");
+            $expecteddatetime = new stdClass();
+            $expecteddatetime->datetime = userdate($activity->completionexpected, "%F %T");
+            $datetext = get_string('completedexpected', 'report_progress', $expecteddatetime);
         } else {
             $datetext = userdate($activity->completionexpected, get_string('strftimedate', 'langconfig'));
         }
     } else {
-        $datetext='';
+        $datetext = get_string('completed');
     }
 
     // Some names (labels) come URL-encoded and can be very long, so shorten them

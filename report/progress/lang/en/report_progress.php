@@ -28,6 +28,7 @@ $string['activityorder'] = 'Activity order';
 $string['activitysection'] = 'Section';
 $string['allactivitiesandresources'] = 'All activities and resources';
 $string['alphabetical'] = 'Alphabetical ';
+$string['completedexpected'] = 'Completed (Expected {$a->datetime})';
 $string['include'] = 'Include';
 $string['no_filter_by_section'] = 'Do not filter by section';
 $string['orderincourse'] = 'Order in course';
