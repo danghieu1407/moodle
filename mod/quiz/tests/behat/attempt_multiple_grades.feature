@@ -44,9 +44,8 @@ Feature: Attempt a quiz with multiple grades
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
     And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
-
-    Then I should see "1.00 out of 1.00" in the "Grade for reading" "table_row"
-    And I should see "0.00 out of 1.00" in the "Grade for listening" "table_row"
+    Then I should see "1.00 out of 1.00 (100%)" in the "Grade for reading" "table_row"
+    And I should see "0.00 out of 1.00 (0%)" in the "Grade for listening" "table_row"
     And I should not see "Unused grade item"
     And I should see "1.00/2.00" in the "Marks" "table_row"
     # Funny order because 'Grade' also appears in other rows.
