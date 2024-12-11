@@ -295,7 +295,8 @@ class attempt_summary_information implements renderable, named_templatable {
 
         // Grades for extra grade items, if any.
         foreach ($attemptobj->get_grade_item_totals() as $gradeitemid => $gradeoutof) {
-            $this->add_item('marks' . $gradeitemid, format_string($gradeoutof->name), $gradeoutof);
+            $this->add_item('marks' . $gradeitemid, format_string($gradeoutof->name),
+                new grade_out_of($quiz, $gradeoutof->grade, $gradeoutof->maxgrade, style: grade_out_of::WITH_PERCENT));
         }
 
         // Show raw marks only if they are different from the grade.
