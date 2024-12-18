@@ -88,5 +88,6 @@ Feature: Course administration menu
     And I should see "TF2"
     And I click on "Course administration" "text"
     And I click on "Question bank" "link" in the "#settingsnav li.type_course[aria-expanded=true]" "css_element"
+    And I click on "System shared question bank" "link"
     And I should see "TF1"
     And I should not see "TF2"
