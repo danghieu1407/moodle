@@ -111,7 +111,7 @@ Feature: Teacher can view and override users' activity completion data via the p
     And I toggle the manual completion state of "my assignment"
     And the manual completion button of "my assignment" is displayed as "Mark as done"
 
-  Scenario: User course profile links to filtered activity completion report (MDL-72240)
+  Scenario: User course profile links to filtered activity completion report
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
     When I navigate to course participants
@@ -119,12 +119,23 @@ Feature: Teacher can view and override users' activity completion data via the p
     And I click on "Ann, Jill, Grainne, Beauchamp" "link" in the "Ann, Jill, Grainne, Beauchamp" "table_row"
     Then I should see "Activity completion" in the "region-main" "region"
 
-  Scenario: Activity completion report lists exactly the expected user (MDL-72240)
+  Scenario: Activity completion report lists exactly the expected user
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
     When I navigate to course participants
     Then I should see "Jane, Nina, Niamh, Cholmondely" in the "Jane, Nina, Niamh, Cholmondely" "table_row"
     And I click on "Jane, Nina, Niamh, Cholmondely" "link" in the "Jane, Nina, Niamh, Cholmondely" "table_row"
     And I click on "Activity completion" "link" in the "region-main" "region"
-    Then I should see "Jane, Nina, Niamh, Cholmondely"
-    But I should not see "Ann, Jill, Grainne, Beauchamp"
+    And I should see "Jane, Nina, Niamh, Cholmondely"
+    And I should not see "Ann, Jill, Grainne, Beauchamp"
+
+  Scenario: Activity completion report filter by participant
+    Given I am on the "Course 1" Course page logged in as teacher1
+    When I navigate to "Reports" in current page administration
+    And I click on "Activity completion" "link"
+    And I select "Grainne Beauchamp" from the "activityparticipant" singleselect
+    Then I should see "Ann, Jill, Grainne, Beauchamp"
+    And I should not see "Jane, Nina, Niamh, Cholmondely"
+    And I select "Niamh Cholmondely" from the "activityparticipant" singleselect
+    And I should see "Jane, Nina, Niamh, Cholmondely"
+    And I should not see "Ann, Jill, Grainne, Beauchamp"

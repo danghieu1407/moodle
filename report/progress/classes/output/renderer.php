@@ -115,6 +115,39 @@ class renderer extends plugin_renderer_base {
     }
 
     /**
+     * Render activity participant single select box.
+     *
+     * @param \moodle_url $url The base url.
+     * @param array $participant The participants in the course.
+     * @param string $activityparticipant The current selected participant.
+     * @return string A html select box.
+     */
+    public function render_activity_participant_select(\moodle_url $url, array $participant,
+            string $activityparticipant): string {
+        foreach ($participant as $key => $value) {
+            $result[$key] = $value;
+        }
+
+        $option = [0 => get_string("allparticipants")];
+        foreach ($result as $item) {
+            $fullname = $item->firstname . ' ' . $item->lastname;
+            $participantid = $item->id;
+            $option[$participantid] = $fullname;
+        }
+
+        $participanturl = fullclone($url);
+        $participanturl->remove_params(['activityparticipant']);
+        $participantselect = new single_select(
+            $participanturl, 'activityparticipant',
+            $option,
+            $activityparticipant, null, 'participant-select-report'
+        );
+        $participantselect->set_label(get_string('activityparticipant', 'report_progress'));
+        return \html_writer::div($this->output->render($participantselect),
+            'activity-participant-selector include-activity-selector d-inline-block ms-3');
+    }
+
+    /**
      * Render download buttons.
      *
      * @param \moodle_url $url The base url.
