@@ -69,30 +69,30 @@ function report_progress_page_type_list($pagetype, $parentcontext, $currentconte
 }
 
 /**
- * Is current user allowed to access this report
+ * Is current user allowed to access this report.
+ * Defined in lib.php for performance reasons.
  *
- * defined in lib.php for performance reasons
+ * @param stdClass $user The user object.
+ * @param stdClass $course The course object.
  *
- * @param stdClass $user
- * @param stdClass $course
- * @return bool
+ * @return bool True if the user can access the report, false otherwise.
  */
 function report_progress_can_access_user_report($user, $course) {
     global $USER, $CFG;
     if (empty($CFG->enablecompletion)) {
         return false;
     }
-    if ($course->id != SITEID and !$course->enablecompletion) {
+    if ($course->id != SITEID && !$course->enablecompletion) {
         return false;
     }
     $coursecontext = context_course::instance($course->id);
     $personalcontext = context_user::instance($user->id);
     if ($user->id == $USER->id) {
-        if ($course->showreports and (is_viewing($coursecontext, $USER) or is_enrolled($coursecontext, $USER))) {
+        if ($course->showreports && (is_viewing($coursecontext, $USER) || is_enrolled($coursecontext, $USER))) {
             return true;
         }
     } else if (has_capability('moodle/user:viewuseractivitiesreport', $personalcontext)) {
-        if ($course->showreports and (is_viewing($coursecontext, $user) or is_enrolled($coursecontext, $user))) {
+        if ($course->showreports && (is_viewing($coursecontext, $user) || is_enrolled($coursecontext, $user))) {
             return true;
         }
     }
@@ -103,17 +103,18 @@ function report_progress_can_access_user_report($user, $course) {
     if (has_capability('report/progress:view', $coursecontext)) {
         return true;
     }
+
     return false;
 }
 /**
  * Add nodes to myprofile page.
  *
- * @param \core_user\output\myprofile\tree $tree Tree object
- * @param stdClass $user user object
- * @param bool $iscurrentuser
- * @param stdClass $course Course object
+ * @param \core_user\output\myprofile\tree $tree Tree object.
+ * @param stdClass $user The user object.
+ * @param bool $iscurrentuser Whether the user is the current user.
+ * @param stdClass $course Course object.
  *
- * @return bool
+ * @return bool True if the nodes were added, false otherwise.
  */
 function report_progress_myprofile_navigation(core_user\output\myprofile\tree $tree, $user, $iscurrentuser, $course) {
     if (empty($course)) {
@@ -122,8 +123,11 @@ function report_progress_myprofile_navigation(core_user\output\myprofile\tree $t
     }
     if (report_progress_can_access_user_report($user, $course)) {
         $url = new moodle_url('/report/progress/index.php',
-                array('id' => $user->id, 'course' => $course->id));
-        $node = new core_user\output\myprofile\node('reports', 'progress', get_string('pluginname','report_progress'), null, $url);
+            ['activityparticipant' => $user->id, 'course' => $course->id]);
+        $node = new core_user\output\myprofile\node('reports', 'progress',
+            get_string('pluginname', 'report_progress'), null, $url);
         $tree->add_node($node);
     }
+
+    return true;
 }
