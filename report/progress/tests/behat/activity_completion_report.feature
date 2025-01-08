@@ -13,6 +13,18 @@ Feature: Teacher can view and override users' activity completion data via the p
       | assign     | my assignment   | A1 desc | C1     | assign1     | 0       | 1          | 0              |                    | 0                                   | 0                |
       | assign     | my assignment 2 | A2 desc | C1     | assign2     | 0       | 2          | 1              |                    | 0                                   | 0                |
       | assign     | my assignment 3 | A3 desc | C1     | assign3     | 0       | 2          | 1              | 1                  | 1                                   | 0                |
+    And the following "question categories" exist:
+      | contextlevel | reference | name           |
+      | Course       | C1        | Test questions |
+    And the following "questions" exist:
+      | questioncategory | qtype     | name           | questiontext              |
+      | Test questions   | truefalse | First question | Answer the first question |
+    And the following "activities" exist:
+      | activity   | name             | course | idnumber | attempts | gradepass | completion | completionpassgrade | completionusegrade |
+      | quiz       | Test quiz name 1 | C1     | quiz1    | 2        | 5.00      | 2          | 1                   | 1                  |
+    And quiz "Test quiz name 1" contains the following questions:
+      | question       | page |
+      | First question | 1    |
     And the following "users" exist:
       | username | firstname | lastname    | email                | idnumber | middlename | alternatename | firstnamephonetic | lastnamephonetic |
       | teacher1 | Teacher   | One         | teacher1@example.com | t1       |            | fred          |                   |                  |
@@ -108,3 +120,33 @@ Feature: Teacher can view and override users' activity completion data via the p
     And the manual completion button of "my assignment" overridden by "Teacher" is displayed as "Done"
     And I toggle the manual completion state of "my assignment"
     And the manual completion button of "my assignment" is displayed as "Mark as done"
+
+  @javascript
+  Scenario: Activity completion report filter by badges
+    Given I am on the "Course 1" course page logged in as teacher1
+    When the following "core_badges > Badge" exists:
+      | name        | Course Badge 1               |
+      | status      | 0                            |
+      | type        | 2                            |
+      | course      | C1                           |
+      | description | Course badge 1 description   |
+      | image       | badges/tests/behat/badge.png |
+    And I navigate to "Badges" in current page administration
+    And I follow "Course Badge 1"
+    And I select "Criteria" from the "jump" singleselect
+    And I set the field "type" to "Activity completion"
+    And I set the field "Quiz - Test quiz name 1" to "1"
+    And I press "Save"
+    And I press "Enable access"
+    And I click on "Enable" "button" in the "Confirm" "dialogue"
+    And I should see "Recipients (0)"
+    # Pass grade for student1. Activity is considered complete because student1 got a passing grade.
+    And user "student1" has attempted "Test quiz name 1" with responses:
+      | slot | response |
+      | 1    | True     |
+    And I navigate to "Reports" in current page administration
+    And I click on "Activity completion" "link"
+    Then I should see "Test quiz name 1"
+    And I should see "my assignment"
+    And I select "Course Badge 1" from the "filteractivitybadgeid" singleselect
+    And I should see "Test quiz name 1"

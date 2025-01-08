@@ -64,3 +64,9 @@
 #completion-progress .icon {
     margin-left: 0.5rem;
 }
+
+#page-report-progress-index .activity-badge-selector select {
+    max-width: 300px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

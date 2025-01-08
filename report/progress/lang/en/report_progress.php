@@ -23,10 +23,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Activity completion';
+$string['activitybadgefilter'] = 'Badge filter';
 $string['activityorder'] = 'Activity order';
 $string['activitysection'] = 'Section';
 $string['allactivitiesandresources'] = 'All activities and resources';
+$string['allbadges'] = 'All badges';
 $string['alphabetical'] = 'Alphabetical ';
 $string['include'] = 'Include';
 $string['no_filter_by_section'] = 'Do not filter by section';
@@ -34,5 +35,6 @@ $string['orderincourse'] = 'Order in course';
 $string['page-report-progress-x'] = 'Any activity completion report';
 $string['page-report-progress-index'] = 'Activity completion report';
 $string['page-report-progress-user'] = 'User activity completion report';
+$string['pluginname'] = 'Activity completion';
 $string['privacy:metadata'] = 'The Activity completion report only shows data stored in other locations.';
 $string['progress:view'] = 'View activity completion reports';

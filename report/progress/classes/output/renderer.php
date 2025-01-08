@@ -69,7 +69,7 @@ class renderer extends plugin_renderer_base {
         );
         $sorttable->set_label(get_string('activityorder', 'report_progress'));
         return \html_writer::div($this->output->render($sorttable),
-                'activity-order-selector include-activity-selector d-inline-block');
+                'activity-order-selector include-activity-selector d-inline-block me-3');
     }
 
     /**
@@ -111,7 +111,52 @@ class renderer extends plugin_renderer_base {
         );
         $sorttable->set_label(get_string('activitysection', 'report_progress'));
         return \html_writer::div($this->output->render($sorttable),
-                'activity-section-selector include-activity-selector d-inline-block ms-3');
+                'activity-section-selector include-activity-selector d-inline-block me-3');
+    }
+
+    /**
+     * Render activity filter single select box.
+     *
+     * @param \moodle_url $url The base url.
+     * @param int $filteractivitybadgeid The current selected filter.
+     * @param array $badges An array containing all badges of the course.
+     * @return string A html select box.
+     */
+    public function render_activity_filter_select(\moodle_url $url, int $filteractivitybadgeid,
+            array $badges): string {
+        if (empty($badges)) {
+            return '';
+        }
+        // Initialize the options array with a default 'all' option.
+        $options = [-1 => get_string("allbadges", "report_progress")];
+
+        foreach ($badges as $badge) {
+            $criteriaparams = $badge->criteria[1]->params ?? null;
+            if ($criteriaparams) {
+                $options[$badge->id] = $badge->name;
+            }
+        }
+
+        // Create the filter badges URL.
+        $filterbadgesurl = fullclone($url);
+        $filterbadgesurl->remove_params(['filteractivitybadgeid']);
+
+        // Create the single select dropdown for badges.
+        $badgeselect = new single_select(
+            $filterbadgesurl,
+            'filteractivitybadgeid',
+            $options,
+            $filteractivitybadgeid,
+            null,
+            'badge-select-report'
+        );
+        $badgeselect->set_label(get_string("activitybadgefilter", "report_progress"));
+
+        // Render the dropdown within a div container.
+        return \html_writer::div(
+            $this->output->render($badgeselect),
+            'activity-badge-selector include-activity-selector d-inline-block me-3'
+        );
     }
 
     /**

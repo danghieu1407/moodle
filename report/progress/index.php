@@ -28,6 +28,7 @@ use \report_progress\local\helper;
 
 require('../../config.php');
 require_once($CFG->libdir . '/completionlib.php');
+require_once($CFG->libdir . "/badgeslib.php");
 
 // Get course
 $id = required_param('course',PARAM_INT);
@@ -54,7 +55,7 @@ $groupid = optional_param('group', 0, PARAM_INT);
 $activityinclude = optional_param('activityinclude', 'all', PARAM_TEXT);
 $activityorder = optional_param('activityorder', 'orderincourse', PARAM_TEXT);
 $activitysection = optional_param('activitysection', -1, PARAM_INT);
-
+$filteractivitybadgeid = optional_param('filteractivitybadgeid', -1, PARAM_INT);
 // Whether to show extra user identity information
 $userfields = \core_user\fields::for_identity($context);
 $extrafields = $userfields->get_required_fields([\core_user\fields::PURPOSE_IDENTITY]);
@@ -99,6 +100,10 @@ if ($activitysection !== '') {
     $url->param('activitysection', $activitysection);
 }
 
+if ($filteractivitybadgeid !== -1) {
+    $url->param('filteractivitybadgeid', $filteractivitybadgeid);
+}
+
 $PAGE->set_url($url);
 $PAGE->set_pagelayout('report');
 
@@ -116,7 +121,9 @@ if ($group===0 && $course->groupmode==SEPARATEGROUPS) {
 // Get data on activities and progress of all users, and give error if we've
 // nothing to display (no users or no activities).
 $completion = new completion_info($course);
-list($activitytypes, $activities) = helper::get_activities_to_show($completion, $activityinclude, $activityorder, $activitysection);
+$badges = badges_get_badges(BADGE_TYPE_COURSE, $course->id);
+[$activitytypes, $activities] = helper::get_activities_to_show($completion, $activityinclude,
+    $activityorder, $activitysection, $filteractivitybadgeid, $badges);
 $output = $PAGE->get_renderer('report_progress');
 
 if ($sifirst !== 'all') {
@@ -228,6 +235,7 @@ if ($csv && $grandtotal && count($activities)>0) { // Only show CSV if there are
         $sections[$sectionnum] = $sectionname;
     }
     echo $output->render_activity_section_select($url, $activitysection, $sections);
+    echo $output->render_activity_filter_select($url, $filteractivitybadgeid, $badges);
 }
 
 if (count($activities)==0) {

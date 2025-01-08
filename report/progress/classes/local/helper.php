@@ -35,11 +35,14 @@ class helper {
      * @param string $activityinclude Activity type for filtering.
      * @param string $activityorder Activity sort option.
      * @param int $activitysection Section number for filtering.
+     * @param int $filteractivitybadgeid Filter activities by badge.
+     * @param array $badges An array containing all badges of the course.
      * @return array The available activity types and activities array after filtering and sorting.
      * @throws \coding_exception
      */
     public static function get_activities_to_show(\completion_info $completion, string $activityinclude,
-            string $activityorder, int $activitysection = -1): array {
+            string $activityorder, int $activitysection = -1, int $filteractivitybadgeid = -1,
+                array $badges = []): array {
         // Get all activity types.
         $activities = $completion->get_activities();
         $availableactivitytypes = [];
@@ -65,6 +68,21 @@ class helper {
         if (!empty($activityinclude) && $activityinclude !== 'all') {
             $activities = array_filter($activities, function($activity) use ($activityinclude) {
                 return $activity->modname === $activityinclude;
+            });
+        }
+
+        // Filter activities by badge.
+        if ($filteractivitybadgeid > -1 && !empty($badges)) {
+            foreach ($badges as $badge) {
+                if ($badge->id == $filteractivitybadgeid) {
+                    $badgeactivities = $badge->criteria[1]->params;
+                    $badgeactivityids = implode(',', array_keys($badgeactivities));
+                    break;
+                }
+            }
+            $filterids = array_map('trim', explode(',', $badgeactivityids));
+            $activities = array_filter($activities, function ($activity) use ($filterids) {
+                return in_array($activity->id, $filterids);
             });
         }
 
