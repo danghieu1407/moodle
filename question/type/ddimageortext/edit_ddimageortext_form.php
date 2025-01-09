@@ -47,7 +47,7 @@ class qtype_ddimageortext_edit_form extends qtype_ddtoimage_edit_form_base {
         $dragids = array(); // Drag no -> dragid.
         if (!empty($question->options)) {
             $question->shuffleanswers = $question->options->shuffleanswers;
-            $question->transparentdropzone = $question->options->transparentdropzone;
+            $question->dropzonevisibility = $question->options->dropzonevisibility;
             $question->drags = array();
             foreach ($question->options->drags as $drag) {
                 $dragindex = $drag->no - 1;
@@ -109,9 +109,7 @@ class qtype_ddimageortext_edit_form extends qtype_ddtoimage_edit_form_base {
 
     public function js_call() {
         global $PAGE;
-        $PAGE->requires->js_call_amd('qtype_ddimageortext/form', 'init', [
-            $this->question->options->transparentdropzone ?? '',
-        ]);
+        $PAGE->requires->js_call_amd('qtype_ddimageortext/form', 'init');
     }
 
     // Drag items.
@@ -171,11 +169,16 @@ class qtype_ddimageortext_edit_form extends qtype_ddtoimage_edit_form_base {
         $dropzoneitem = array();
 
         $grouparray = array();
-        $mform->addElement('advcheckbox', 'transparentdropzone',
-            get_string('transparentdropzone', 'qtype_ddimageortext'));
-        $mform->setDefault('transparentdropzone', $this->get_default_value('transparentdropzone', 0));
-        $mform->addElement('static', 'transparentdropzonedesc', '',
-            get_string('transparentdropzonedesc', 'qtype_ddimageortext'));
+
+        $options = [
+            0 => get_string('dropzonevisibility_hideoption', 'qtype_ddimageortext'),
+            1 => get_string('dropzonevisibility_showoption', 'qtype_ddimageortext'),
+        ];
+
+        $mform->addElement('select', 'dropzonevisibility',
+            get_string('dropzonevisibility', 'qtype_ddimageortext'), $options);
+        $mform->setDefault('dropzonevisibility', $this->get_default_value('dropzonevisibility', 0));
+        $mform->addHelpButton('dropzonevisibility', 'dropzonevisibility', 'qtype_ddimageortext');
         $grouparray[] = $mform->createElement('text', 'xleft',
                                                 get_string('xleft', 'qtype_ddimageortext'),
                                                 array('size' => 5, 'class' => 'tweakcss'));

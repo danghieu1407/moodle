@@ -132,32 +132,18 @@ form.mform fieldset#id_previewareaheader .group1 {
     background-color: #fff;
 }
 
-.que.ddimageortext .transparent .dropzones .inplace1,
-.que.ddimageortext .transparent .dropzones .inplace2,
-.que.ddimageortext .transparent .dropzones .inplace3,
-.que.ddimageortext .transparent .dropzones .inplace4,
-.que.ddimageortext .transparent .dropzones .inplace5,
-.que.ddimageortext .transparent .dropzones .inplace6,
-.que.ddimageortext .transparent .dropzones .inplace7,
-.que.ddimageortext .transparent .dropzones .inplace8 {
+.que.ddimageortext .transparent .dropzones > img {
     border: none;
 }
 
-.que.ddimageortext .transparent .dropzones .inplace1:hover,
-.que.ddimageortext .transparent .dropzones .inplace2:hover,
-.que.ddimageortext .transparent .dropzones .inplace3:hover,
-.que.ddimageortext .transparent .dropzones .inplace4:hover,
-.que.ddimageortext .transparent .dropzones .inplace5:hover,
-.que.ddimageortext .transparent .dropzones .inplace6:hover,
-.que.ddimageortext .transparent .dropzones .inplace7:hover,
-.que.ddimageortext .transparent .dropzones .inplace8:hover {
+.que.ddimageortext .transparent .dropzones > img:hover {
     border: 1px solid #000;
 }
 
-.que.ddimageortext .transparent .group1:hover,
-.que.ddimageortext .transparent .dropzones .group1,
-form.mform fieldset#id_previewareaheader .transparent .group1 {
-    background-color: rgba(255, 255, 255, 0);
+.que.ddimageortext .transparent img:not(.dropbackground):hover,
+.que.ddimageortext .droparea.transparent .dropzone,
+.que.ddimageortext .droparea.transparent .dropzone + img {
+    background-color: transparent;
 }
 
 .que.ddimageortext .group2,

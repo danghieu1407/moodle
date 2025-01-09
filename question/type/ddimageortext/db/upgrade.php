@@ -31,19 +31,19 @@ function xmldb_qtype_ddimageortext_upgrade($oldversion) {
     global $DB;
 
     $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
-    if ($oldversion < 2024102300) {
+    if ($oldversion < 2025010901) {
 
-        // Define field transparentdropzone to be added to qtype_ddimageortext.
+        // Define field dropzonevisibility to be added to qtype_ddimageortext.
         $table = new xmldb_table('qtype_ddimageortext');
-        $field = new xmldb_field('transparentdropzone', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'shownumcorrect');
+        $field = new xmldb_field('dropzonevisibility', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'shownumcorrect');
 
-        // Conditionally launch add field transparentdropzone.
+        // Conditionally launch add field dropzonevisibility.
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
 
         // Ddimageortext savepoint reached.
-        upgrade_plugin_savepoint(true, 2024102300, 'qtype', 'ddimageortext');
+        upgrade_plugin_savepoint(true, 2025010901, 'qtype', 'ddimageortext');
     }
 
     return true;
