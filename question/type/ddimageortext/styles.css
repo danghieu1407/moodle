@@ -152,22 +152,10 @@ form.mform fieldset#id_previewareaheader .group2 {
     border-radius: 10px 0 0 0;
 }
 
-.que.ddimageortext .transparent .group2:hover,
-.que.ddimageortext .transparent .dropzones .group2,
-form.mform fieldset#id_previewareaheader .transparent .group2 {
-    background-color: rgba(176, 196, 222, 0);
-}
-
 .que.ddimageortext .group3,
 form.mform fieldset#id_previewareaheader .group3 {
     background-color: #dcdcdc;
     border-radius: 0 10px 0 0;
-}
-
-.que.ddimageortext .transparent .group3:hover,
-.que.ddimageortext .transparent .dropzones .group3,
-form.mform fieldset#id_previewareaheader .transparent .group3 {
-    background-color: rgba(220, 220, 220, 0);
 }
 
 .que.ddimageortext .group4,
@@ -176,22 +164,10 @@ form.mform fieldset#id_previewareaheader .group4 {
     border-radius: 0 0 10px 0;
 }
 
-.que.ddimageortext .transparent .group4:hover,
-.que.ddimageortext .transparent .dropzones .group4,
-form.mform fieldset#id_previewareaheader .transparent .group4 {
-    background-color: rgba(216, 191, 216, 0);
-}
-
 .que.ddimageortext .group5,
 form.mform fieldset#id_previewareaheader .group5 {
     background-color: #87cefa;
     border-radius: 0 0 0 10px;
-}
-
-.que.ddimageortext .transparent .group5:hover,
-.que.ddimageortext .transparent .dropzones .group5,
-form.mform fieldset#id_previewareaheader .transparent .group5 {
-    background-color: rgba(135, 206, 250, 0);
 }
 
 .que.ddimageortext .group6,
@@ -200,34 +176,16 @@ form.mform fieldset#id_previewareaheader .group6 {
     border-radius: 0 10px 10px 0;
 }
 
-.que.ddimageortext .transparent .group6:hover,
-.que.ddimageortext .transparent .dropzones .group6,
-form.mform fieldset#id_previewareaheader .transparent .group6 {
-    background-color: rgba(218, 165, 32, 0);
-}
-
 .que.ddimageortext .group7,
 form.mform fieldset#id_previewareaheader .group7 {
     background-color: #ffd700;
     border-radius: 10px 0 0 10px;
 }
 
-.que.ddimageortext .transparent .group7:hover,
-.que.ddimageortext .transparent .dropzones .group7,
-form.mform fieldset#id_previewareaheader .transparent .group7 {
-    background-color: rgba(255, 215, 0, 0);
-}
-
 .que.ddimageortext .group8,
 form.mform fieldset#id_previewareaheader .group8 {
     background-color: #f0e68c;
     border-radius: 10px 10px 10px 10px;
-}
-
-.que.ddimageortext .transparent .group8:hover,
-.que.ddimageortext .transparent .dropzones .group8,
-form.mform fieldset#id_previewareaheader .transparent .group8 {
-    background-color: rgba(240, 230, 140, 0);
 }
 
 /* Editing form. Style repeated elements*/
