@@ -314,17 +314,21 @@ foreach($activities as $activity) {
     $datepassed = $activity->completionexpected && $activity->completionexpected <= time();
     $datepassedclass = $datepassed ? 'completion-expired' : '';
 
-    if ($activity->completionexpected && !$csv) {
-        $datetext = userdate($activity->completionexpected, get_string('strftimedate', 'langconfig'));
+    if ($activity->completionexpected) {
+        if ($csv) {
+            $datetext = userdate($activity->completionexpected, "%F %T");
+        } else {
+            $datetext = userdate($activity->completionexpected, get_string('strftimedate', 'langconfig'));
+        }
     } else {
-        $datetext = get_string('completed');
+        $datetext='';
     }
 
     // Some names (labels) come URL-encoded and can be very long, so shorten them
     $displayname = format_string($activity->name, true, array('context' => $activity->context));
 
     if ($csv) {
-        print $sep.csv_quote($displayname).$sep.csv_quote($datetext);
+        print $sep.csv_quote($displayname).$sep.csv_quote(get_string('completed'));
     } else {
         $shortenedname = shorten_text($displayname);
         print '<th scope="col" class="completion-header '.$datepassedclass.'">'.
