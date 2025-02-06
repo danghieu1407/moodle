@@ -264,6 +264,19 @@ function question_build_edit_resources($edittab, $baseurl, $params,
         require_login($courseid, false, $cm);
     }
 
+    if ($cat) {
+        [$categoryid, $contextid] = explode(',', $cat);
+        if ($categoryid && $contextid) {
+            $context = \context::instance_by_id($contextid);
+            if ($context->contextlevel === CONTEXT_MODULE) {
+                $cminfo = get_fast_modinfo($courseid)->get_cm($context->instanceid);
+                if ($cminfo->id !== $module->cmid) {
+                    $thiscontext = $context;
+                }
+            }
+        }
+    }
+
     if ($thiscontext){
         $contexts = new core_question\local\bank\question_edit_contexts($thiscontext);
         $contexts->require_one_edit_tab_cap($edittab);
