@@ -1400,7 +1400,7 @@ function question_edit_url($context) {
  * @return navigation_node Returns the question branch that was added
  */
 function question_extend_settings_navigation(navigation_node $navigationnode, $context, $baseurl = '/question/edit.php') {
-    global $PAGE;
+    global $PAGE, $COURSE;
 
     $iscourse = $context->contextlevel === CONTEXT_COURSE;
 
@@ -1415,6 +1415,19 @@ function question_extend_settings_navigation(navigation_node $navigationnode, $c
     if (($cat = $PAGE->url->param('cat')) && preg_match('~\d+,\d+~', $cat) &&
             $PAGE->context->id === $context->id) {
         $params['cat'] = $cat;
+        [, $contextid] = explode(',', $cat);
+        // This block of code handles the scenario when editing a question in a different module.
+        // After saving the question, it appends the 'cat' parameter to the URL.
+        // If the parent category of the question does not belong to the module
+        // In which the question is being used, the URL needs to be corrected by
+        // Overriding the module ID with the correct course module ID.
+        if ($context->id !== $contextid) {
+            $contextinurl = context::instance_by_id($contextid);
+            if ($contextinurl->contextlevel === CONTEXT_MODULE) {
+                $cminfo = get_fast_modinfo($COURSE->id)->get_cm($contextinurl->instanceid);
+                $params['cmid'] = $cminfo->id;
+            }
+        }
     }
 
     $questionnode = $navigationnode->add(get_string($iscourse ? 'questionbank_plural' : 'questionbank', 'question'),

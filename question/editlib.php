@@ -263,28 +263,6 @@ function question_build_edit_resources($edittab, $baseurl, $params,
     } else {
         require_login($courseid, false, $cm);
     }
-
-    if ($cat) {
-        [$categoryid, $contextid] = explode(',', $cat);
-        // Ensure both categoryid and contextid are exist.
-        if ($categoryid && $contextid) {
-            // Retrieve the context object based on the provided $contextid.
-            $context = \context::instance_by_id($contextid);
-
-            if ($context->contextlevel === CONTEXT_MODULE) {
-                // Get fast access to all module information for the current course.
-                // Use the context's instance ID to get the corresponding module information.
-                $cminfo = get_fast_modinfo($courseid)->get_cm($context->instanceid);
-
-                // If the current module ID ($cm->id) does not match the provided module ID ($module).
-                // Update the current context ($thiscontext) to use the retrieved context.
-                if ($cminfo->id !== $module) {
-                    $thiscontext = $context;
-                }
-            }
-        }
-    }
-
     if ($thiscontext){
         $contexts = new core_question\local\bank\question_edit_contexts($thiscontext);
         $contexts->require_one_edit_tab_cap($edittab);
