@@ -402,6 +402,12 @@ body.path-question-type {
     margin-bottom: 1.5em;
 }
 
+.que .content .qtext::after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
 .que .validationerror {
     color: map-get($theme-colors, 'danger');
 }
