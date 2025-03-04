@@ -34084,6 +34084,12 @@ body.path-question-type .fitem .col-form-label.visually-hidden:not(legend):not([
   margin-bottom: 1.5em;
 }
 
+.que .content .qtext::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
 .que .validationerror {
   color: #ca3120;
 }
