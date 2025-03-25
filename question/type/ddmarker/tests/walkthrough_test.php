@@ -323,6 +323,7 @@ final class walkthrough_test extends \qbehaviour_walkthrough_test_base {
         // Create a drag-and-drop question.
         $dd = \test_question_maker::make_question('ddmarker');
         $dd->shufflechoices = false;
+        $dd->showmisplaced = true;
         $this->start_attempt_at_question($dd, 'deferredfeedback', 3);
 
         // Check the initial state.
@@ -360,6 +361,8 @@ final class walkthrough_test extends \qbehaviour_walkthrough_test_base {
         $this->check_current_state(question_state::$gradedpartial);
         $this->check_current_mark(2);
         $this->check_current_output(
+                new \question_pattern_expectation(
+                    '~<div class="dropzones" data-visibled-dropzones="\\[[^]]+\\]"~'),
                 $this->get_contains_draggable_marker_home_expectation(1, false),
                 $this->get_contains_draggable_marker_home_expectation(2, false),
                 $this->get_contains_draggable_marker_home_expectation(3, false),
