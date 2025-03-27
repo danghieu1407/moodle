@@ -57,21 +57,8 @@ export function init() {
 
     // Add additional event blockers for anchor tags.
     document.querySelectorAll('table a').forEach(anchor => {
-        anchor.addEventListener('keydown', preventDefaultForCtrlArrows, true);
+        anchor.addEventListener('keydown', true);
     });
-}
-
-/**
- * Prevents default behavior for Ctrl+Arrow key combinations specifically for anchor tags.
- *
- * @private
- * @param {KeyboardEvent} event The keydown event.
- */
-function preventDefaultForCtrlArrows(event) {
-    if (event.ctrlKey && ['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown'].includes(event.key)) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-    }
 }
 
 /**
