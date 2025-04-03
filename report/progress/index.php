@@ -54,6 +54,7 @@ $groupid = optional_param('group', 0, PARAM_INT);
 $activityinclude = optional_param('activityinclude', 'all', PARAM_TEXT);
 $activityorder = optional_param('activityorder', 'orderincourse', PARAM_TEXT);
 $activitysection = optional_param('activitysection', -1, PARAM_INT);
+$activityparticipant = optional_param('activityparticipant', 0, PARAM_INT);
 
 // Whether to show extra user identity information
 $userfields = \core_user\fields::for_identity($context);
@@ -98,6 +99,9 @@ if ($activityorder !== '') {
 if ($activitysection !== '') {
     $url->param('activitysection', $activitysection);
 }
+if ($activityparticipant !== 0) {
+    $url->param('activityparticipant', $activityparticipant);
+}
 
 $PAGE->set_url($url);
 $PAGE->set_pagelayout('report');
@@ -119,41 +123,35 @@ $completion = new completion_info($course);
 list($activitytypes, $activities) = helper::get_activities_to_show($completion, $activityinclude, $activityorder, $activitysection);
 $output = $PAGE->get_renderer('report_progress');
 
-if ($sifirst !== 'all') {
-    set_user_preference('ifirst', $sifirst);
-}
-if ($silast !== 'all') {
-    set_user_preference('ilast', $silast);
-}
-
-if (!empty($USER->preference['ifirst'])) {
-    $sifirst = $USER->preference['ifirst'];
-} else {
-    $sifirst = 'all';
+// Set user preferences if not 'all'.
+foreach (['ifirst' => $sifirst, 'ilast' => $silast] as $key => $value) {
+    if ($value !== 'all') {
+        set_user_preference($key, $value);
+    }
 }
 
-if (!empty($USER->preference['ilast'])) {
-    $silast = $USER->preference['ilast'];
-} else {
-    $silast = 'all';
+// Retrieve preferences or default to 'all'.
+$sifirst = !empty($USER->preference['ifirst']) ? $USER->preference['ifirst'] : 'all';
+$silast = !empty($USER->preference['ilast']) ? $USER->preference['ilast'] : 'all';
+
+// Generate where clause and parameters.
+$where = [];
+$whereparams = [];
+
+if ($activityparticipant !== 0) {
+    $where[] = 'u.id = :activityparticipant';
+    $whereparams['activityparticipant'] = $activityparticipant;
 }
 
-// Generate where clause
-$where = array();
-$where_params = array();
-
-if ($sifirst !== 'all') {
-    $where[] = $DB->sql_like('u.firstname', ':sifirst', false, false);
-    $where_params['sifirst'] = $sifirst.'%';
-}
-
-if ($silast !== 'all') {
-    $where[] = $DB->sql_like('u.lastname', ':silast', false, false);
-    $where_params['silast'] = $silast.'%';
+foreach (['firstname' => $sifirst, 'lastname' => $silast] as $field => $value) {
+    if ($value !== 'all') {
+        $where[] = $DB->sql_like("u.$field", ":si$field", false, false);
+        $whereparams["si$field"] = $value . '%';
+    }
 }
 
 // Get user match count
-$total = $completion->get_num_tracked_users(implode(' AND ', $where), $where_params, $group);
+$total = $completion->get_num_tracked_users(implode(' AND ', $where), $whereparams, $group);
 
 // Total user count
 $grandtotal = $completion->get_num_tracked_users('', array(), $group);
@@ -164,7 +162,7 @@ $progress = array();
 if ($total) {
     $progress = $completion->get_progress_all(
         implode(' AND ', $where),
-        $where_params,
+        $whereparams,
         $group,
         $firstnamesort ? 'u.firstname ASC, u.lastname ASC' : 'u.lastname ASC, u.firstname ASC',
         $csv ? 0 : helper::COMPLETION_REPORT_PAGE,
@@ -228,6 +226,7 @@ if ($csv && $grandtotal && count($activities)>0) { // Only show CSV if there are
         $sections[$sectionnum] = $sectionname;
     }
     echo $output->render_activity_section_select($url, $activitysection, $sections);
+    echo $output->render_activity_participant_select($url, $completion->get_tracked_users(groupid: $groupid), $activityparticipant);
 }
 
 if (count($activities)==0) {
