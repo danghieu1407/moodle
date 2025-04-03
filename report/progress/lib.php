@@ -106,6 +106,7 @@ function report_progress_can_access_user_report($user, $course) {
 
     return false;
 }
+
 /**
  * Add nodes to myprofile page.
  *

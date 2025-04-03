@@ -99,7 +99,7 @@ if ($activityorder !== '') {
 if ($activitysection !== '') {
     $url->param('activitysection', $activitysection);
 }
-if ($activityparticipant !== -1) {
+if ($activityparticipant !== 0) {
     $url->param('activityparticipant', $activityparticipant);
 }
 
@@ -226,7 +226,7 @@ if ($csv && $grandtotal && count($activities)>0) { // Only show CSV if there are
         $sections[$sectionnum] = $sectionname;
     }
     echo $output->render_activity_section_select($url, $activitysection, $sections);
-    echo $output->render_activity_participant_select($url, $completion->get_tracked_users(), $activityparticipant);
+    echo $output->render_activity_participant_select($url, $completion->get_tracked_users(groupid: $groupid), $activityparticipant);
 }
 
 if (count($activities)==0) {
