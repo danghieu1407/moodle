@@ -26,11 +26,13 @@
 
 use core_badges\reportbuilder\local\systemreports\recipients;
 use core_reportbuilder\system_report_factory;
+use core_reportbuilder\local\report\base;
 
 require_once(__DIR__ . '/../config.php');
 require_once($CFG->libdir . '/badgeslib.php');
 
-$badgeid    = required_param('id', PARAM_INT);
+$badgeid = required_param('id', PARAM_INT);
+$download = optional_param('download', '', PARAM_ALPHA);
 
 require_login();
 
@@ -42,6 +44,7 @@ $badge = new badge($badgeid);
 $context = $badge->get_context();
 $navurl = new moodle_url('/badges/index.php', array('type' => $badge->type));
 
+// Check if user has capability to view badge recipients
 require_capability('moodle/badges:viewawarded', $context);
 
 if ($badge->type == BADGE_TYPE_COURSE) {
@@ -69,6 +72,44 @@ $PAGE->navbar->add($badge->name);
 /** @var core_badges_renderer $output */
 $output = $PAGE->get_renderer('core', 'badges');
 
+// Create the report instance
+$report = system_report_factory::create(
+    recipients::class,
+    $context,
+    '',
+    '',
+    0,
+    ['badgeid' => $badge->id]
+);
+
+// Enable download buttons for the report
+$report->set_downloadable(true);
+
+// Handle downloads if requested
+if (!empty($download)) {
+    // For system reports, we need to ensure the report can be downloaded
+    if ($report->get_type() === base::TYPE_SYSTEM_REPORT) {
+        if (!$report->can_be_downloaded()) {
+            throw new \moodle_exception('nopermissiontoviewreport', 'core_reportbuilder');
+        }
+        
+        // Combine original report parameters with 'download' parameter
+        $parameters = ['badgeid' => $badge->id, 'download' => $download];
+        
+        // Create a new instance of the report with download parameters
+        $downloadreport = system_report_factory::create(
+            recipients::class,
+            $context,
+            '',
+            '',
+            0,
+            $parameters
+        );
+        
+        $downloadreport->download();
+    }
+}
+
 echo $output->header();
 
 $actionbar = new \core_badges\output\recipients_action_bar($badge, $PAGE);
@@ -77,7 +118,6 @@ echo $output->render_tertiary_navigation($actionbar);
 echo $OUTPUT->heading(print_badge_image($badge, $context, 'small') . ' ' . $badge->name);
 echo $output->print_badge_status_box($badge);
 
-$report = system_report_factory::create(recipients::class, $PAGE->context, '', '', 0, ['badgeid' => $badge->id]);
 echo $report->output();
 
 echo $output->footer();
