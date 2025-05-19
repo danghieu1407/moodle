@@ -2487,12 +2487,15 @@ class quiz_attempt {
             $this->attempt, $this->get_context());
 
         if (!$versioninformation) {
-            quiz_delete_attempt($this->attempt, $this->get_quiz());
-            $continuelink = new moodle_url('/mod/quiz/view.php', ['id' => $this->get_cmid()]);
-            if (has_capability('mod/quiz:preview', context_module::instance($this->get_cmid()))) {
-                throw new moodle_exception('attempterrorcontentchange', 'quiz', $continuelink);
-            } else {
-                throw new moodle_exception('attempterrorcontentchangeforuser', 'quiz', $continuelink);
+            $this->handle_missing_question_attempt();
+        }
+        // Retrieve all slots (questions) in the quiz attempt.
+        $allslots = $this->get_slots();
+
+        // Check if all slots have corresponding version information.
+        foreach ($allslots as $slot) {
+            if (!isset($versioninformation[$slot]) || empty($versioninformation[$slot]->newquestionid)) {
+                $this->handle_missing_question_attempt();
             }
         }
         $anychanges = false;
@@ -2524,6 +2527,19 @@ class quiz_attempt {
                 $DB->update_record('quiz_attempts', $this->attempt);
                 $this->recompute_final_grade();
             }
+        }
+    }
+
+    /**
+     * Handle the case where a question in an attempt has been deleted.
+     */
+    private function handle_missing_question_attempt(): void {
+        quiz_delete_attempt($this->attempt, $this->get_quiz());
+        $continuelink = new moodle_url('/mod/quiz/view.php', ['id' => $this->get_cmid()]);
+        if (has_capability('mod/quiz:preview', context_module::instance($this->get_cmid()))) {
+            throw new moodle_exception('attempterrorcontentchange', 'quiz', $continuelink);
+        } else {
+            throw new moodle_exception('attempterrorcontentchangeforuser', 'quiz', $continuelink);
         }
     }
 }
