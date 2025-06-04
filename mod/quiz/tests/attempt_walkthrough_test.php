@@ -223,10 +223,14 @@ final class attempt_walkthrough_test extends \advanced_testcase {
     }
 
     /**
-     * Test attempt quiz with start attempt random question while delete question version in use.
-     * Tests both cases: deleting both question versions and deleting only one version.
+     * Tests that a quiz attempt with random questions correctly handles the case
+     * where question versions in use have been deleted.
+     *
+     * This test covers below scenarios:
+     * 1. Deleting the latest versions of all questions used in the attempt.
+     * 2. Deleting both versions of the first question only.
      */
-    public function test_random_question_attempt_with_deleted_versions(): void {
+    public function test_quiz_attempt_with_random_questions_when_versions_are_deleted(): void {
         global $SITE, $USER;
 
         $this->resetAfterTest(true);
@@ -319,10 +323,6 @@ final class attempt_walkthrough_test extends \advanced_testcase {
             $this->assertEquals('attempterrorcontentchange', $e->errorcode);
         }
 
-        $a = new \stdClass();
-        $a->category = $cat->id;
-        $a->name = $question1v1->name;
-        $a->id = $question1v1->id;
         try {
             quiz_prepare_and_start_new_attempt($quizobj, 1, null);
         } catch (\core\exception\moodle_exception $e) {

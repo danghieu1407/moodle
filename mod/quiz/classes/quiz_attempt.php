@@ -2486,9 +2486,6 @@ class quiz_attempt {
         $versioninformation = qbank_helper::get_version_information_for_questions_in_attempt(
             $this->attempt, $this->get_context());
 
-        if (!$versioninformation) {
-            $this->handle_missing_question_attempt();
-        }
         // Retrieve all slots (questions) in the quiz attempt.
         $slots = $this->get_slots();
 
