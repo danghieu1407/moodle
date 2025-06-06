@@ -202,6 +202,115 @@ final class attempt_walkthrough_test extends \advanced_testcase {
     }
 
     /**
+     * Tests that a quiz attempt with random questions correctly handles the case
+     * where question versions in use have been deleted.
+     * This test covers below scenarios:
+     * 1. Deleting the latest versions of all questions used in the attempt.
+     * 2. Deleting both versions of the first question only.
+     *
+     * @param array $deleteversions Array of question version labels to delete. Valid labels are:
+     *                              'q1v1' - question 1, version 1
+     *                              'q1v2' - question 1, version 2
+     *                              'q2v1' - question 2, version 1
+     *                              'q2v2' - question 2, version 2
+     * @param bool $expectfallback Whether we expect a new attempt to fall back to earlier versions.
+     * @param bool $expectnotenough Whether we expect a new attempt to fail due to lack of questions.
+     * @dataProvider quiz_random_question_deletion_provider
+     */
+    public function test_quiz_attempt_with_random_questions_when_versions_are_deleted(
+        array $deleteversions,
+        bool $expectfallback,
+        bool $expectnotenough
+    ): void {
+        global $SITE, $USER;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $user = $USER;
+
+        // Create quiz.
+        $quizgenerator = $this->getDataGenerator()->get_plugin_generator('mod_quiz');
+        $quiz = $quizgenerator->create_instance([
+            'course' => $SITE->id,
+            'questionsperpage' => 0,
+            'grade' => 100.0,
+            'sumgrades' => 3,
+        ]);
+
+        // Create categories and questions.
+        $questiongenerator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $cat = $questiongenerator->create_question_category();
+        $cat2 = $questiongenerator->create_question_category();
+
+        $question1v1 = $questiongenerator->create_question('shortanswer', null, ['category' => $cat->id]);
+        $question1v2 = $questiongenerator->update_question($question1v1, null, ['name' => 'This is the latest version']);
+
+        $question2v1 = $questiongenerator->create_question('essay', null, ['category' => $cat2->id]);
+        $question2v2 = $questiongenerator->update_question($question2v1, null, ['name' => 'This is the latest version']);
+
+        // Add random questions to quiz.
+        $this->add_random_questions($quiz->id, 1, $cat->id, 1);
+        $this->add_random_questions($quiz->id, 1, $cat2->id, 1);
+
+        // Start attempt.
+        $quizobj = quiz_settings::create($quiz->id, $user->id);
+        $attempt = quiz_prepare_and_start_new_attempt($quizobj, 1, null);
+        $attemptobj = quiz_attempt::create($attempt->id);
+
+        // Delete questions based on provider input.
+        $questions = [
+            'q1v1' => $question1v1->id,
+            'q1v2' => $question1v2->id,
+            'q2v1' => $question2v1->id,
+            'q2v2' => $question2v2->id,
+        ];
+        $deleteids = array_map(fn($label) => $questions[$label], $deleteversions);
+        \qbank_deletequestion\helper::delete_questions($deleteids, false);
+
+        // Try updating attempt.
+        try {
+            $attemptobj->update_questions_to_new_version_if_changed();
+            $this->fail('Exception expected due to preview is deleted');
+        } catch (\moodle_exception $e) {
+            $this->assertEquals('attempterrorcontentchange', $e->errorcode);
+        }
+
+        if ($expectfallback) {
+            // New attempt should fall back to earlier versions.
+            $attempt = quiz_prepare_and_start_new_attempt($quizobj, 1, null);
+            $attemptobj = quiz_attempt::create($attempt->id);
+
+            $this->assertEquals($question1v1->id, $attemptobj->get_question_attempt(1)->get_question_id());
+            $this->assertEquals($question2v1->id, $attemptobj->get_question_attempt(2)->get_question_id());
+        }
+
+        if ($expectnotenough) {
+            // New attempt should fail due to lack of questions.
+            $this->expectException(\core\exception\moodle_exception::class);
+            $this->expectExceptionMessageMatches('/There are not enough questions in category/');
+            quiz_prepare_and_start_new_attempt($quizobj, 1, null);
+        }
+    }
+
+    /**
+     * Data provider for test_quiz_attempt_with_random_questions_when_versions_are_deleted.
+     */
+    public static function quiz_random_question_deletion_provider(): array {
+        return [
+            'delete only latest versions (fallback works)' => [
+                ['q1v2', 'q2v2'],
+                true, // Expect fallback.
+                false, // Not enough questions.
+            ],
+            'delete both versions of q1 (no fallback, insufficient)' => [
+                ['q1v1', 'q1v2'],
+                false, // Expect fallback.
+                true, // Not enough questions.
+            ],
+        ];
+    }
+
+    /**
      * Create a quiz containing one question and a close time.
      *
      * The question is the standard shortanswer test question.
