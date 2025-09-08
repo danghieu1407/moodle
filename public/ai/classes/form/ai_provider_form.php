@@ -108,16 +108,21 @@ class ai_provider_form extends moodleform {
             get_string('enableglobalratelimit', 'core_ai'),
             get_string('enableglobalratelimit_help', 'core_ai'),
         );
-        // Setting to set how many requests per hour are allowed for the global rate limit.
-        // Should only be enabled when global rate limiting is enabled.
+
+        // Global rate limit duration setting.
         $mform->addElement(
-            'text',
+            'configduration',
             'globalratelimit',
             get_string('globalratelimit', 'core_ai'),
-            'maxlength="10" size="4"',
+            [
+                'defaultunit' => HOURSECS,
+                'minduration' => 1,
+            ]
         );
         $mform->setType('globalratelimit', PARAM_INT);
         $mform->addHelpButton('globalratelimit', 'globalratelimit', 'core_ai');
+        $mform->setDefault('globalratelimit', 100 * HOURSECS); // 100 hours
+
         $mform->hideIf('globalratelimit', 'enableglobalratelimit', 'notchecked');
 
         // Setting to enable/disable user rate limiting.
@@ -127,18 +132,21 @@ class ai_provider_form extends moodleform {
             get_string('enableuserratelimit', 'core_ai'),
             get_string('enableuserratelimit_help', 'core_ai'),
         );
-        // Setting to set how many requests per hour are allowed for the user rate limit.
-        // Should only be enabled when user rate limiting is enabled.
+
+        // User rate limit duration setting.
         $mform->addElement(
-            'text',
+            'configduration',
             'userratelimit',
             get_string('userratelimit', 'core_ai'),
-            'maxlength="10" size="4"',
+            [
+                'defaultunit' => HOURSECS,
+                'minduration' => 1,
+            ]
         );
         $mform->setType('userratelimit', PARAM_INT);
         $mform->addHelpButton('userratelimit', 'userratelimit', 'core_ai');
+        $mform->setDefault('userratelimit', 100 * HOURSECS); // 100 hours
         $mform->hideIf('userratelimit', 'enableuserratelimit', 'notchecked');
-
         // Form buttons.
         $buttonarray = [];
         // If provider config is empty this is a new instance.
