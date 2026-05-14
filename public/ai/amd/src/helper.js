@@ -22,35 +22,175 @@
  */
 export default class AIHelper {
     /**
-     * Replace double line breaks with <br> and with </p><p> for paragraphs.
-     * This is to handle the difference in response from the AI to what is expected by the editor.
+     * Escape text to prevent rendering user-provided HTML.
      *
-     * @param {String} text The text to replace.
+     * @param {String} text The text to escape.
      * @returns {String}
      */
-    static replaceLineBreaks(text) {
-        // Normalise double line breaks
-        const textWithParagraphs = text.replace(/(\r\n|\n|<br\s*\/?>){2,}/g, '\n');
+    static escapeHtml(text) {
+        const replacements = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            '\'': '&#039;',
+        };
 
-        // Replace remaining single line breaks with <br> tags
-        const textWithBreaks = textWithParagraphs.replace(/\n/g, '<br/><br/>');
-
-        // Add opening and closing <p> tags to wrap the entire content
-        return `<p>${textWithBreaks}</p>`;
+        return text.replace(/[&<>"']/g, character => replacements[character]);
     }
 
     /**
-     * Replace markdown formatting.
-     * Even when asked not to, AI models will sometimes return markdown.
+     * Replace markdown bold and inline code formatting.
      *
      * @param {String} text The text to replace.
      * @returns {String}
      */
-    static replaceMarkdown(text) {
-        // Replace markdown bold formatting HTML equivalent.
-        const textWithMarkdown = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    static replaceInlineMarkdown(text) {
+        let formattedText = text;
+        formattedText = formattedText.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        formattedText = formattedText.replace(/`(.+?)`/g, '<code>$1</code>');
 
-        return textWithMarkdown;
+        return formattedText;
+    }
+
+    /**
+     * Format markdown text into semantic HTML.
+     *
+     * @param {String} text The text to format.
+     * @returns {String}
+     */
+    static markdownToHtml(text) {
+        const normalisedText = text.replace(/\r\n/g, '\n').trim();
+        if (!normalisedText) {
+            return '';
+        }
+
+        const lines = normalisedText.split('\n');
+        const html = [];
+        let paragraphLines = [];
+        let listType = null;
+        let orderedItemOpen = false;
+        let nestedUnorderedOpen = false;
+        let pendingListBreak = false;
+
+        const flushParagraph = () => {
+            if (!paragraphLines.length) {
+                return;
+            }
+
+            const paragraphText = this.replaceInlineMarkdown(paragraphLines.join(' ').trim());
+            html.push(`<p>${paragraphText}</p>`);
+            paragraphLines = [];
+        };
+
+        const closeList = () => {
+            if (!listType) {
+                return;
+            }
+
+            if (listType === 'ol') {
+                if (nestedUnorderedOpen) {
+                    html.push('</ul>');
+                    nestedUnorderedOpen = false;
+                }
+                if (orderedItemOpen) {
+                    html.push('</li>');
+                    orderedItemOpen = false;
+                }
+                html.push('</ol>');
+            } else {
+                html.push('</ul>');
+            }
+            listType = null;
+        };
+
+        lines.forEach((line) => {
+            const trimmedLine = line.trim();
+            if (!trimmedLine) {
+                flushParagraph();
+                // A blank line may separate list items, or end a list entirely.
+                // Defer the decision until we see the next non-empty line.
+                pendingListBreak = Boolean(listType);
+                return;
+            }
+
+            const headingMatch = trimmedLine.match(/^(#{1,6})\s+(.+)$/);
+            if (headingMatch) {
+                flushParagraph();
+                closeList();
+                pendingListBreak = false;
+                const headingLevel = headingMatch[1].length;
+                const headingText = this.replaceInlineMarkdown(headingMatch[2].trim());
+                html.push(`<h${headingLevel}>${headingText}</h${headingLevel}>`);
+                return;
+            }
+
+            const unorderedListMatch = trimmedLine.match(/^[-*]\s+(.+)$/);
+            if (unorderedListMatch) {
+                flushParagraph();
+                const itemText = this.replaceInlineMarkdown(unorderedListMatch[1].trim());
+
+                // Treat unordered lines following ordered lines as level-2 bullets.
+                if (listType === 'ol' && orderedItemOpen) {
+                    if (!nestedUnorderedOpen) {
+                        html.push('<ul>');
+                        nestedUnorderedOpen = true;
+                    }
+                    html.push(`<li>${itemText}</li>`);
+                    pendingListBreak = false;
+                    return;
+                }
+
+                if (pendingListBreak && listType && listType !== 'ul') {
+                    closeList();
+                }
+                if (listType !== 'ul') {
+                    closeList();
+                    listType = 'ul';
+                    html.push('<ul>');
+                }
+                html.push(`<li>${itemText}</li>`);
+                pendingListBreak = false;
+                return;
+            }
+
+            const orderedListMatch = trimmedLine.match(/^\d+[.)]\s+(.+)$/);
+            if (orderedListMatch) {
+                flushParagraph();
+                if (listType === 'ul') {
+                    closeList();
+                }
+                if (listType !== 'ol') {
+                    closeList();
+                    listType = 'ol';
+                    html.push('<ol>');
+                }
+                const itemText = this.replaceInlineMarkdown(orderedListMatch[1].trim());
+                if (nestedUnorderedOpen) {
+                    html.push('</ul>');
+                    nestedUnorderedOpen = false;
+                }
+                if (orderedItemOpen) {
+                    html.push('</li>');
+                }
+                html.push(`<li>${itemText}`);
+                orderedItemOpen = true;
+                pendingListBreak = false;
+                return;
+            }
+
+            if (pendingListBreak) {
+                closeList();
+                pendingListBreak = false;
+            }
+            closeList();
+            paragraphLines.push(trimmedLine);
+        });
+
+        flushParagraph();
+        closeList();
+
+        return html.join('');
     }
 
     /**
@@ -60,10 +200,8 @@ export default class AIHelper {
      * @returns {String}
      */
     static formatResponse(text) {
-        let formattedText = this.replaceLineBreaks(text) ;
-        formattedText = this.replaceMarkdown(formattedText);
-
-        return formattedText;
+        const escapedText = this.escapeHtml(text);
+        return this.markdownToHtml(escapedText);
     }
 
     /**

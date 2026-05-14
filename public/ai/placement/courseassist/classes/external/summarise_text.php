@@ -94,11 +94,13 @@ class summarise_text extends external_api {
         // Send the action to the AI manager.
         $manager = \core\di::get(\core_ai\manager::class);
         $response = $manager->process_action($action);
+        // Raw model output: not passed through format_text() so markdown stays intact for the placement AMD layer,
+        // which escapes then renders a limited markdown subset (core_ai/helper formatResponse).
         $generatedcontent = $response->get_response_data()['generatedcontent'] ?? '';
         // Return the response.
         return [
             'success' => $response->get_success(),
-            'generatedcontent' => \core_external\util::format_text($generatedcontent, FORMAT_PLAIN, $contextid)[0],
+            'generatedcontent' => $generatedcontent,
             'finishreason' => $response->get_response_data()['finishreason'] ?? '',
             'errorcode' => $response->get_errorcode(),
             'error' => $response->get_error(),
